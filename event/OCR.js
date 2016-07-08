@@ -58,7 +58,7 @@ if(data.get_server){
 	if(!found){
 		response.error = "Not enough server";
 	}
-	response.time_change_to_bot = 20 + Math.random()*20;
+	response.time_change_to_bot = 300 + Math.random()*20;
 	Spark.setScriptData("data",response);
 }
 
@@ -155,24 +155,25 @@ if(data.online_match_end ){
 	var my_score = data.my_score;
 	var op_score = data.opponent_score;
 	var op_id = data.opponent_id;
+	var isWin = data.isWin;
+	var isDraw = data.isDraw;
 	var currentPlayerData = playerDataList.findOne({"playerID": playerID});
 	var bonus = 0;
 	var server = Spark.runtimeCollection("PhotonServer");
 	server.remove({"playerID":playerID});
 	server.remove({"playerID":op_id});
+	var onlineMatchList = Spark.runtimeCollection("OnlineMatch");
+	var online_match_data =onlineMatchList.findOne({"playerID":playerID});
 	if(data.game_type != "friend"){
-		var onlineMatchList = Spark.runtimeCollection("OnlineMatch");
-		var online_match_data =onlineMatchList.findOne({"playerID":playerID});
-		if(online_match_data !== null && !online_match_data.is_finish){
-			if(my_score >= op_score){
-				var isWin = my_score > op_score;
+			if(online_match_data !== null && !online_match_data.is_finish){
+			if(isWin){
 				var currentPlayer = Spark.getPlayer();
 				var bonus_trophies = get_bonus_trophies_win(online_match_data.my_trophy,online_match_data.opponent_trophy);
 				bonus = bonus_trophies;
 				if(!currentPlayerData.trophies) currentPlayerData.trophies = 0;
 				if(isWin){
 					currentPlayerData.online_win = currentPlayerData.online_win ? (currentPlayerData.online_win+1) : 1;
-				}else{
+				}else if(isDraw){
 					bonus = 0;
 				}
 				currentPlayerData.trophies = (online_match_data.my_trophy + bonus);
@@ -181,9 +182,6 @@ if(data.online_match_end ){
 					currentPlayerData.highest_trophy = currentPlayerData.trophies;
 				}
 				playerDataList.update({"playerID": playerID}, {"$set": currentPlayerData}, true,false);
-
-				var save_data = {"winner":{"id":playerID,"score":my_score},"loser":{"id":op_id,"score":op_score},"draw":(!isWin)};
-				Spark.getLog().debug(save_data);
 			}else{
 				currentPlayerData.online_lose = currentPlayerData.online_lose ? (currentPlayerData.online_lose+1) : 0;
 				bonus = -get_bonus_trophies_lost(online_match_data.my_trophy,online_match_data.opponent_trophy);
@@ -196,7 +194,8 @@ if(data.online_match_end ){
 		}else{
 			bonus = 0;
 		}
-
+		var save_data = {"playerID":playerID,"my_score":my_score,"op_id":op_id,"op_score":op_score,"draw":isDraw,"win":isWin,"data":online_match_data};
+		Spark.getLog().debug(save_data);
 		var result = Spark.sendRequest({
 			"@class": ".LogEventRequest",
 			"eventKey": "TLB",
