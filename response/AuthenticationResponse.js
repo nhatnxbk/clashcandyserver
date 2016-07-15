@@ -1,14 +1,7 @@
 require("share");
-// ====================================================================================================
-//
-// Cloud Code for AuthenticationResponse, write your code here to customise the GameSparks platform.
-//
-// For details of the GameSparks Cloud Code API see https://portal.gamesparks.net/docs.htm			
-//
-// ====================================================================================================
 var playerData = Spark.runtimeCollection("playerData"); // get the collection data
 var currentPlayer = playerData.findOne({
-	"playerID": Spark.getPlayer().getPlayerId()
+  "playerID": Spark.getPlayer().getPlayerId()
 }); // search the collection data for the entry with the same id as the player
 if (currentPlayer === null){
     currentPlayer = {};
@@ -26,6 +19,22 @@ if(!("trophies" in currentPlayer)){
 //     "CITY": ""
 // });
 }
+//======== Add default card for new user =========//
+if (!currentPlayer.card_data) {
+  var cardDataMaster = Spark.metaCollection("card_master");
+  var cardData = cardDataMaster.find({"card_default":1}).toArray();
+  var userCardData = [];
+  for(var i = 0; i < cardData.length; i++) {
+      var card = cardData[i];
+      card.current_level = 1;
+      card.current_number = 0;
+  }
+  currentPlayer.card_data = cardData;
+}
+
+if (!currentPlayer.player_coin) {
+    currentPlayer.player_coin = DEFAULT_COIN;
+}
 
 //======== Caculate time can request and receive energy or not=========//
 var timeNow = Date.now();
@@ -38,8 +47,8 @@ if(!currentPlayer.userName && currentPlayer.facebook_name){
     currentPlayer.userName = currentPlayer.facebook_name;
     var result = Spark.sendRequest(
     {
-    	"@class" : ".ChangeUserDetailsRequest",
-    	"displayName" : currentPlayer.facebook_name
+      "@class" : ".ChangeUserDetailsRequest",
+      "displayName" : currentPlayer.facebook_name
     });
 }
 var timeDelta = timeNow - time_fb_invite;

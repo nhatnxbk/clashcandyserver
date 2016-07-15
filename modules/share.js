@@ -18,6 +18,7 @@ var USER_START_TROPHY = 50;
 var IGNORE_HAS_RANDOM_TIME = true;
 var TROPHIES_OF_EASY_BOT   = 150;
 var TROPHIES_OF_NORMAL_BOT = 250;
+var DEFAULT_COIN = 1000;
 //easy
 var rt_1_e = [3, 5, 6, 6, 7, 8, 9, 8, 9, 9, 8, 9, 8, 8, 8, 7];//con 1 cap
 var rt_2_e = [3, 4, 4, 5, 6, 7, 8, 7, 9, 8, 7, 8, 8, 7, 6, 6];// con 2 cap
@@ -51,7 +52,20 @@ var rto_2_h = [0.8, 2.0, 2.0, 2.1, 2.2, 2.3, 2.5, 2.8, 2.8, 2.5, 2.5, 3.0, 3.0, 
 var rto_3_h = [1.0, 1.8, 2.0, 2.1, 2.2, 2.3, 2.5, 2.7, 2.7 ,2.7, 2.5, 2.5, 2.5, 2.5, 2,6, 2.9];
 var rto_4_h = [1.2, 1.2, 2.0, 2.0, 2.1, 2.2, 2.3, 2.3, 2.3 ,2.3 ,2.4, 2.4, 2.4 ,2.5, 2.3, 2.4];
 var rto_5_h = [1.5, 1.7, 1.7, 1.7, 1.8, 1.8, 1.8, 2.0, 2.0, 2.1, 2.1, 2.2, 2.1, 2.1, 2.2, 2.2];
-
+//====card parameter====//
+var card_level_max = 10;
+var card_score_rarity_common = [10,15,20,25,30,35,40,45,50,60];
+var card_score_rarity_rare = [25,30,35,40,45,55,65,75,85,100];
+var card_score_rarity_epic = [40,50,60,80,100,130,160,200,250,300];
+var card_energy_rarity_common = [40,39,38,36,34,32,30,27,24,20];
+var card_energy_rarity_rare = [60,58,56,54,52,50,47,44,40,33];
+var card_energy_rarity_epic = [80,78,76,72,68,62,55,48,40,30];
+var card_number_need_rarity_common = [0,5,20,50,100,200,400,800,1600,3200];
+var card_number_need_rarity_rare = [0,5,10,20,50,100,200,400,800,1600];
+var card_number_need_rarity_epic = [0,2,4,10,20,50,100,200,400,800];
+var card_coin_need_rarity_common = [0,50,200,500,1000,2000,4000,8000,16000,32000];
+var card_coin_need_rarity_rare = [0,100,500,1000,2000,4000,8000,16000,32000,64000];
+var card_coin_need_rarity_epic = [0,500,1000,2000,4000,8000,16000,32000,64000,128000];
 //Config send to user
 var CONFIG = {};
 CONFIG.num_friend_per_energy = 500;
@@ -76,3 +90,16 @@ CONFIG.num_energy_big = 360;
 CONFIG.num_random_big = 180;
 CONFIG.num_hint_big = 180;
 CONFIG.max_energy_offline = 5;
+CONFIG.card_level_max = card_level_max;
+CONFIG.csrc = card_score_rarity_common;
+CONFIG.csrr = card_score_rarity_rare;
+CONFIG.csre = card_score_rarity_epic;
+CONFIG.cerc = card_energy_rarity_common;
+CONFIG.cerr = card_energy_rarity_rare;
+CONFIG.cere = card_energy_rarity_epic;
+CONFIG.cnnrc = card_number_need_rarity_common;
+CONFIG.cnnrr = card_number_need_rarity_rare;
+CONFIG.cnnre = card_number_need_rarity_epic;
+CONFIG.ccnrc = card_coin_need_rarity_common;
+CONFIG.ccnrr = card_coin_need_rarity_rare;
+CONFIG.ccnre = card_coin_need_rarity_epic;
