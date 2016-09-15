@@ -1,8 +1,9 @@
 require("share");
-var playerData = Spark.runtimeCollection("playerData"); // get the collection data
-var currentPlayer = playerData.findOne({
-  "playerID": Spark.getPlayer().getPlayerId()
-}); // search the collection data for the entry with the same id as the player
+require("common");
+
+var playerID = Spark.getPlayer().getPlayerId();
+var currentPlayer = playerCollection.findOne({"playerID": playerID});
+
 if (currentPlayer === null){
     currentPlayer = {};
 }
@@ -59,7 +60,7 @@ if(timeDelta < TIME_FB_INVITE){
 }
 var response = Spark.sendRequest({"@class":".AccountDetailsRequest"});
 currentPlayer.location =  response.location;
-playerData.update({"playerID": Spark.getPlayer().getPlayerId()}, {"$set": currentPlayer}, true,false);
+playerCollection.update({"playerID": Spark.getPlayer().getPlayerId()}, {"$set": currentPlayer}, true,false);
 delete currentPlayer.time_fb_invite;
 delete currentPlayer.last_fb_friend_number;
 delete currentPlayer.online_button_click;
@@ -79,6 +80,12 @@ delete currentPlayer.rto_2;
 delete currentPlayer.rto_3;
 delete currentPlayer.rto_4;
 delete currentPlayer.rto_5;
+
+//player level info
+var levelInfo = getPlayerLevelInfo(playerID);
+if (levelInfo) {
+  currentPlayer.level_info = levelInfo;
+}
 
 Spark.setScriptData("player_Data", currentPlayer); // return the player via script-data
 Spark.setScriptData("config", CONFIG); // return the player via script-data
