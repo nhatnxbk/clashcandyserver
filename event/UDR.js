@@ -1,5 +1,6 @@
 //=========User Data Request Controller============//
 require("share");
+require("common");
 var playerDataList = Spark.runtimeCollection("playerData");
 var playerID = Spark.getPlayer().getPlayerId();
 var playerData = playerDataList.findOne({"playerID":playerID});
@@ -84,15 +85,18 @@ if (data.upgrade_card && data.card_id !== undefined) {
 	    				response = {
 	    					"result":true,
 	    					"message":"Upgrade success!",
-	    					"card_data": [
+	    					"card_data":
 			    				{
 				    				"card_id": cardData.card_id,
 				    				"current_level": cardData.current_level,
-				    				"current_number": cardData.current_number
-				    			}
-			    			],
+				    				"current_number": cardData.current_number,
+				    				"next_level" : cardData.current_level + 1,
+				    				"next_score" : getCardScore(cardData.rarity, cardData.current_level + 1),
+									"next_energy" : getCardEnergy(cardData.rarity, cardData.current_level + 1),
+									"next_number" : getCardNumberNeed(cardData.rarity, cardData.current_level + 1),
+									"coin_need" : getCardCoinNeed(cardData.rarity, cardData.current_level + 1)
+				    			},
 	    					"player_coin":playerData.player_coin
-	    					
 	    				}
 	    		}
     		} else {
@@ -115,7 +119,7 @@ if (data.debug_add_card) {
     
     for (var i = 0; i < playerCardData.length; i++) {
     	var cardData = playerCardData[i];
-    	cardData.current_number = cardData.current_number + data.number;
+    	cardData.current_number = cardData.current_number + number;
     	reponseCardData.push({
     		"card_id": cardData.card_id,
 	    	"current_number": cardData.current_number
@@ -124,7 +128,7 @@ if (data.debug_add_card) {
     playerDataList.update({"playerID":playerID},{"$set":{"card_data":playerCardData}});
     response = {
     	"result":true,
-    	"message": "You have got " + data.number + " card!",
+    	"message": "You have got " + number + " card for each kind!",
   		"card_data": reponseCardData
   	}
 
@@ -143,56 +147,4 @@ function getCardData(id) {
     	}
     }
     return null;
-}
-
-function getCardScore(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_score_rarity_common[level - 1] : card_score_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_score_rarity_rare[level - 1] : card_score_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_score_rarity_epic[level - 1] : card_score_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_score_rarity_common[level - 1] : card_score_rarity_common[0];
-	}
-}
-
-function getCardEnergy(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_common[level - 1] : card_energy_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_rare[level - 1] : card_energy_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_epic[level - 1] : card_energy_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_common[level - 1] : card_energy_rarity_common[0];
-	}
-}
-
-function getCardNumberNeed(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_number_need_rarity_common[level - 1] : card_number_need_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_number_need_rarity_rare[level - 1] : card_number_need_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_number_need_rarity_epic[level - 1] : card_number_need_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_number_need_rarity_common[level - 1] : card_number_need_rarity_common[0];
-	}
-}
-
-function getCardCoinNeed(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_coin_need_rarity_common[level - 1] : card_coin_need_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_coin_need_rarity_rare[level - 1] : card_coin_need_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_coin_need_rarity_epic[level - 1] : card_coin_need_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_coin_need_rarity_common[level - 1] : card_coin_need_rarity_common[0];
-	}
 }

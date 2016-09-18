@@ -60,7 +60,7 @@ if(timeDelta < TIME_FB_INVITE){
 }
 var response = Spark.sendRequest({"@class":".AccountDetailsRequest"});
 currentPlayer.location =  response.location;
-playerCollection.update({"playerID": Spark.getPlayer().getPlayerId()}, {"$set": currentPlayer}, true,false);
+playerCollection.update({"playerID": playerID}, {"$set": currentPlayer}, true,false);
 delete currentPlayer.time_fb_invite;
 delete currentPlayer.last_fb_friend_number;
 delete currentPlayer.online_button_click;
@@ -87,5 +87,14 @@ if (levelInfo) {
   currentPlayer.level_info = levelInfo;
 }
 
+//store data
+var storeData = getStoreInfo(playerID);
+if (storeData) {
+  currentPlayer.store = storeData;
+}
+
+//card data
+currentPlayer.card_data = getListCardFull(currentPlayer.card_data);
+
 Spark.setScriptData("player_Data", currentPlayer); // return the player via script-data
-Spark.setScriptData("config", CONFIG); // return the player via script-data
+Spark.setScriptData("config", client_config); // return the player via script-data
