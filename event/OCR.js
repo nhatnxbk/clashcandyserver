@@ -85,7 +85,6 @@ if(data.online_match_start  && data.game_type != "friend"){
 	if(!opponentPlayer) opponentPlayer = {};
 	if(!opponentPlayerData) opponentPlayerData = {"trophies":0};
 	if(!opponentPlayerData.trophies) opponentPlayerData.trophies = 0;	
-	var op_total_match_on = (opponentPlayer.getPrivateData("total_match_on")?opponentPlayer.getPrivateData("total_match_on"):0) + 1;
 	
 	var timeNow = Date.now();
 	var response = {
@@ -93,7 +92,6 @@ if(data.online_match_start  && data.game_type != "friend"){
 		"time": timeNow,
 		"time_expire": TIME_EXPIRE_MATCH,
 		"my_total_match_on": my_total_match_on,
-		"opponent_total_match_on": op_total_match_on,
 		"my_trophy": currentPlayerData.trophies,"opponent_trophy": opponentPlayerData.trophies,
 		"bot_enable": data.bot_enable
 	};
@@ -140,7 +138,6 @@ if(data.online_match_start  && data.game_type != "friend"){
 	});
 
 	if(!data.bot_enable){
-		opponentPlayer.setPrivateData("total_match_on",op_total_match_on);
 	}else{
 		currentPlayerData.online_bot_start = currentPlayerData.online_bot_start ? (currentPlayerData.online_bot_start+1) : 1;
 	}
@@ -166,7 +163,7 @@ if(data.online_match_end ){
 	var online_match_data =onlineMatchList.findOne({"playerID":playerID});
 	if(data.game_type != "friend"){
 			if(online_match_data !== null && !online_match_data.is_finish){
-			if(isWin){
+			if(isWin || isDraw){
 				var currentPlayer = Spark.getPlayer();
 				var bonus_trophies = get_bonus_trophies_win(online_match_data.my_trophy,online_match_data.opponent_trophy);
 				bonus = bonus_trophies;
@@ -407,4 +404,21 @@ function get_bonus_trophies_lost(myTrophies, oppoentTrophies) {
 		bonusByOffset = -bonusByOffset;
 	}
 	return bonus - bonusByOffset;
+}
+if (data.push_notification) {
+    var response = SendNewNotification().getResponseJson();
+    Spark.setScriptData("response", response);
+}
+
+function SendNewNotification() {
+  var jsonBody = {
+    "app_id": "b2c8f180-b9b8-4ab6-85e2-cd6c8c1c02e7",
+    "included_segments": ["All"],
+    "contents": {"en": "There is message push from GS to your application via OneSignal"},
+  };
+  var promise = Spark.getHttp("https://onesignal.com/api/v1/notifications").setHeaders({
+    "Content-Type": "application/json;charset=utf-8",
+    "Authorization": "Basic MGJkOWRjZTAtZGU5Mi00Njk1LTgwYWMtNDUwMWI0NmNiODc3"
+  }).postJson(jsonBody);
+  return promise;
 }
