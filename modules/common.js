@@ -49,7 +49,10 @@ function getStoreInfo(playerID) {
 				var cardStore = {
 					"item_type"   : 2,
 					"card_id"     : card.card_id,
+					"color_id"    : card.color_id,
 					"card_type"   : card.type,
+					"color_id1"   : card.color_id1 ? card.color_id1 : 0,
+					"color_id2"   : card.color_id2 ? card.color_id2 : 0,
 					"card_rarity" : card.rarity,
 					"number"      : 0,
 					"max_number"  : maxNumber,
