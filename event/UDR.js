@@ -81,7 +81,7 @@ if (data.upgrade_card && data.card_id !== undefined) {
 	    				playerData.player_coin = playerCoin - getCardCoinNeed(cardData.rarity, cardData.current_level + 1);
 	    				cardData.current_number = cardData.current_number - getCardNumberNeed(cardData.rarity, cardData.current_level + 1);
 	    				cardData.current_level = cardData.current_level + 1;
-	    				playerDataList.update({"playerID":playerID},{"$set":{"card_data":playerCardData, "player_coin":playerCoin}});
+	    				playerDataList.update({"playerID":playerID},{"$set":{"card_data":playerCardData, "player_coin":playerData.player_coin}});
 	    				response = {
 	    					"result":true,
 	    					"message":"Upgrade success!",

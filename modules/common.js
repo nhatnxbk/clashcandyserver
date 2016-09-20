@@ -43,16 +43,20 @@ function getStoreInfo(playerID) {
 			var idx = Math.floor(Math.random()*listCardLength);
 			var card = listCard[idx];
 			if (lastListCardID.indexOf(card.card_id) == -1) {
+				var maxNumber = getCardNumberMaxCanBuy(card.rarity);
+				var costDefault = getDefaultCardCost(card.rarity);
+				var costAll = getCardCost(costDefault, 1, maxNumber);
 				var cardStore = {
+					"item_type"   : 2,
 					"card_id"     : card.card_id,
 					"card_type"   : card.type,
 					"card_rarity" : card.rarity,
 					"number"      : 0,
-					"max_number"  : 20,
-					"cost_one"    : 20,
-
+					"max_number"  : maxNumber,
+					"cost"        : costDefault,
+					"cost_all"    : costAll
 				};
-				packCard.push(card);
+				packCard.push(cardStore);
 				lastListCardID.push(card.card_id);
 			}
 		}
@@ -129,4 +133,46 @@ function getCardCoinNeed(rarity, level) {
 		default:
 			return level <= card_level_max && level > 0 ? card_coin_need_rarity_common[level - 1] : card_coin_need_rarity_common[0];
 	}
+}
+
+function getCardNumberMaxCanBuy(rarity) {
+	switch (rarity) {
+		case 1:
+			return server_config.max_number_card_common_store;
+		case 2:
+			return server_config.max_number_card_rare_store;
+		case 3:
+			return server_config.max_number_card_epic_store;
+		default:
+			return server_config.max_number_card_common_store;
+	}
+}
+
+function getDefaultCardCost(rarity) {
+	switch (rarity) {
+		case 1:
+			return server_config.default_cost_card_common;
+		case 2:
+			return server_config.default_cost_card_rare;
+		case 3:
+			return server_config.default_cost_card_epic;
+		default:
+			return server_config.default_cost_card_rare;
+	}
+}
+
+function getCardCostByOne(number, cost) {
+	var costTotal = 0;
+	for (var i = 1; i <= number; i++) {
+		costTotal += cost * i;
+	}
+	return costTotal;
+}
+
+function getCardCost(cost, number, max_number) {
+	var costTotal = getCardCostByOne(number, cost);
+	for (var i = number + 1; i <= max_number; i++) {
+		costTotal += cost * i;
+	}
+	return costTotal;
 }
