@@ -1,5 +1,6 @@
 //=========Online COntroller============//
 require("share");
+require("common");
 var playerDataList = Spark.runtimeCollection("playerData");
 var playerID = Spark.getPlayer().getPlayerId();
 var data = Spark.getData().data;
@@ -289,17 +290,8 @@ function get_bot_player_data() {
 	var online_match_data = onlineMatchList.findOne({"playerID":playerID});
 	var list_ignore = online_match_data && online_match_data.list_ignore ? online_match_data.list_ignore : [];
 	var opponentPlayer;
-	var opponentPlayerData;
-	if (IGNORE_HAS_RANDOM_TIME) {
-		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr}});
-	} else {
-		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr},"has_random_time":true});
-	}
+	var opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr}});
 	var opponentPlayerDataArr = opponentPlayerData.toArray();
-	if (!IGNORE_HAS_RANDOM_TIME && opponentPlayerDataArr.length == 0) {
-		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr}});
-		opponentPlayerDataArr = opponentPlayerData.toArray();
-	}
 	var count = 0;
 	while(count < 10) {
 		if (opponentPlayerDataArr.length == 0) {
@@ -341,42 +333,18 @@ function get_bot_player_data() {
 			opponentPlayer = opponentPlayerDataArr[r];
 		}
 	}
-	if (!opponentPlayer.rt_1 || opponentPlayer.rt_1.length == 0) {
-		if (opponentPlayer.trophies <= TROPHIES_OF_EASY_BOT) {
-			opponentPlayer.rt_1 = rt_1_e;
-			opponentPlayer.rt_2 = rt_2_e;
-			opponentPlayer.rt_3 = rt_3_e;
-			opponentPlayer.rt_4 = rt_4_e;
-			opponentPlayer.rt_5 = rt_5_e;
-			opponentPlayer.rto_1 = rto_1_e;
-			opponentPlayer.rto_2 = rto_2_e;
-			opponentPlayer.rto_3 = rto_3_e;
-			opponentPlayer.rto_4 = rto_4_e;
-			opponentPlayer.rto_5 = rto_5_e;
-		} else if (opponentPlayer.trophies > TROPHIES_OF_EASY_BOT && opponentPlayer.trophies <= TROPHIES_OF_NORMAL_BOT) {
-			opponentPlayer.rt_1 = rt_1_n;
-			opponentPlayer.rt_2 = rt_2_n;
-			opponentPlayer.rt_3 = rt_3_n;
-			opponentPlayer.rt_4 = rt_4_n;
-			opponentPlayer.rt_5 = rt_5_n;
-			opponentPlayer.rto_1 = rto_1_n;
-			opponentPlayer.rto_2 = rto_2_n;
-			opponentPlayer.rto_3 = rto_3_n;
-			opponentPlayer.rto_4 = rto_4_n;
-			opponentPlayer.rto_5 = rto_5_n;
-		} else {
-			opponentPlayer.rt_1 = rt_1_h;
-			opponentPlayer.rt_2 = rt_2_h;
-			opponentPlayer.rt_3 = rt_3_h;
-			opponentPlayer.rt_4 = rt_4_h;
-			opponentPlayer.rt_5 = rt_5_h;
-			opponentPlayer.rto_1 = rto_1_h;
-			opponentPlayer.rto_2 = rto_2_h;
-			opponentPlayer.rto_3 = rto_3_h;
-			opponentPlayer.rto_4 = rto_4_h;
-			opponentPlayer.rto_5 = rto_5_h;
+	var cardData = opponentPlayer.card_data;
+	if (!cardData) {
+		cardData = cardMaster.find({"card_default":1}).toArray();
+		for(var i = 0; i < cardData.length; i++) {
+			cardData[i].current_level = 1;
 		}
 	}
+	cardData.forEach(function(card){
+		card.current_score = getCardScore(card.rarity, card.current_level);
+		card.current_energy = getCardEnergy(card.rarity, card.current_level);
+	});
+	opponentPlayer.card_data = cardData;
 	return opponentPlayer;
 }
 
