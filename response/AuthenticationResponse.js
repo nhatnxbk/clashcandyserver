@@ -22,8 +22,7 @@ if(!("trophies" in currentPlayer)){
 }
 //======== Add default card for new user =========//
 if (!currentPlayer.card_data) {
-  var cardDataMaster = Spark.metaCollection("card_master");
-  var cardData = cardDataMaster.find({"card_default":1}).toArray();
+  var cardData = cardMaster.find({"card_default":1}).toArray();
   var userCardData = [];
   for(var i = 0; i < cardData.length; i++) {
       var card = cardData[i];

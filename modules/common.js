@@ -23,10 +23,12 @@ function getPlayerLevelInfo(playerID) {
 
 function getStoreInfo(playerID) {
 	var storeInfo = {};
-	var packCoin = storeMaster.find({"item_type":0}).toArray();
-	var packItem = storeMaster.find({"item_type":1}).toArray();
+	var packCoin = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.coin}).toArray();
+	var packLife = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.life}).toArray();
+	// var packBomb = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.bomb}).toArray();
 	storeInfo.pack_coin = packCoin;
-	storeInfo.pack_item = packItem;
+	storeInfo.pack_life = packLife;
+	// storeInfo.pack_bomb = packBomb;
 	var packDaily = storeDaily.findOne({"playerID":playerID});
 	if (packDaily && timeNow - packDaily.time < 5*60*1000) {
 		storeInfo.pack_card = packDaily.pack_card;
@@ -45,9 +47,9 @@ function getStoreInfo(playerID) {
 			if (lastListCardID.indexOf(card.card_id) == -1) {
 				var maxNumber = getCardNumberMaxCanBuy(card.rarity);
 				var costDefault = getDefaultCardCost(card.rarity);
-				var costAll = getCardCost(costDefault, 1, maxNumber);
+				var costAll = getAllCardCost(0, card.rarity);
 				var cardStore = {
-					"item_type"   : 2,
+					"item_type"   : server_config.PACK_ITEM_TYPE.card,
 					"card_id"     : card.card_id,
 					"color_id"    : card.color_id,
 					"card_type"   : card.type,
@@ -84,6 +86,30 @@ function getListCardFull(list_card) {
 		card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
 	});
 	return list_card;
+}
+
+function getCardStore(playerID, cardID) {
+	var cardStore = storeDaily.findOne({"playerID":playerID});
+	var cardData = cardStore ? cardStore.pack_card : [];
+	if (cardData) {
+		for (var i = 0; i < cardData.length; i++) {
+			if (cardData[i].card_id == cardID) {
+				return cardData[i];
+			}
+		}
+	}
+	return undefined;
+}
+
+function getCardPlayer(playerID, cardID) {
+	var playerData = playerCollection.findOne({"playerID":playerID});
+	var listCard = playerData.card_data ? playerData.card_data : [];
+	for (var i = 0; i < listCard.length; i++) {
+		if (listCard[i].card_id == cardID) {
+			return listCard[i];
+		}
+	}
+	return undefined;
 }
 
 function getCardScore(rarity, level) {
@@ -164,18 +190,17 @@ function getDefaultCardCost(rarity) {
 	}
 }
 
-function getCardCostByOne(number, cost) {
-	var costTotal = 0;
-	for (var i = 1; i <= number; i++) {
-		costTotal += cost * i;
-	}
-	return costTotal;
+function getCardCost(currentNumber, rarity) {
+	var costDefault = getDefaultCardCost(rarity);
+	return costDefault * (currentNumber + 1);
 }
 
-function getCardCost(cost, number, max_number) {
-	var costTotal = getCardCostByOne(number, cost);
-	for (var i = number + 1; i <= max_number; i++) {
-		costTotal += cost * i;
+function getAllCardCost(currentNumber, rarity) {
+	var costTotal = 0;
+	var costDefault = getDefaultCardCost(rarity);
+	var maxNumber = getCardNumberMaxCanBuy(rarity);
+	for (var i = currentNumber + 1; i <= maxNumber; i++) {
+		costTotal += costDefault * i;
 	}
 	return costTotal;
 }
