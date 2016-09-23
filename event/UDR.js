@@ -90,8 +90,8 @@ if (data.upgrade_card && data.card_id !== undefined) {
 				    				"current_level": cardData.current_level,
 				    				"current_number": cardData.current_number,
 				    				"next_level" : cardData.current_level + 1,
-				    				"next_score" : getCardScore(cardData.rarity, cardData.current_level + 1),
-									"next_energy" : getCardEnergy(cardData.rarity, cardData.current_level + 1),
+				    				"next_score" : getCardScore(cardData, cardData.current_level + 1),
+									"next_energy" : getCardEnergy(cardData, cardData.current_level + 1),
 									"next_number" : getCardNumberNeed(cardData.rarity, cardData.current_level + 1),
 									"coin_need" : getCardCoinNeed(cardData.rarity, cardData.current_level + 1)
 				    			},

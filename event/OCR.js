@@ -341,8 +341,8 @@ function get_bot_player_data() {
 		}
 	}
 	cardData.forEach(function(card){
-		card.current_score = getCardScore(card.rarity, card.current_level);
-		card.current_energy = getCardEnergy(card.rarity, card.current_level);
+		card.current_score = getCardScore(card, card.current_level);
+		card.current_energy = getCardEnergy(card, card.current_level);
 	});
 	opponentPlayer.card_data = cardData;
 	return opponentPlayer;

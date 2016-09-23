@@ -77,11 +77,11 @@ function getStoreInfo(playerID) {
 
 function getListCardFull(list_card) {
 	list_card.forEach(function(card){
-		card.current_score = getCardScore(card.rarity, card.current_level);
-		card.current_energy = getCardEnergy(card.rarity, card.current_level);
+		card.current_score = getCardScore(card, card.current_level);
+		card.current_energy = getCardEnergy(card, card.current_level);
 		card.next_level = card.current_level < card_level_max ? card.current_level + 1 : card.current_level;
-		card.next_score = getCardScore(card.rarity, card.next_level);
-		card.next_energy = getCardEnergy(card.rarity, card.next_level);
+		card.next_score = getCardScore(card, card.next_level);
+		card.next_energy = getCardEnergy(card, card.next_level);
 		card.next_number = getCardNumberNeed(card.rarity, card.next_level);
 		card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
 	});
@@ -112,30 +112,12 @@ function getCardPlayer(playerID, cardID) {
 	return undefined;
 }
 
-function getCardScore(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_score_rarity_common[level - 1] : card_score_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_score_rarity_rare[level - 1] : card_score_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_score_rarity_epic[level - 1] : card_score_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_score_rarity_common[level - 1] : card_score_rarity_common[0];
-	}
+function getCardScore(card, level) {
+	return level <= card_level_max && level > 0 ? card.card_score[level - 1] : card.card_score[0];
 }
 
-function getCardEnergy(rarity, level) {
-	switch (rarity) {
-		case 1:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_common[level - 1] : card_energy_rarity_common[0];
-		case 2:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_rare[level - 1] : card_energy_rarity_rare[0];
-		case 3:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_epic[level - 1] : card_energy_rarity_epic[0];
-		default:
-			return level <= card_level_max && level > 0 ? card_energy_rarity_common[level - 1] : card_energy_rarity_common[0];
-	}
+function getCardEnergy(card, level) {
+	return level <= card_level_max && level > 0 ? card.card_energy[level - 1] : card.card_energy[0];
 }
 
 function getCardNumberNeed(rarity, level) {
