@@ -77,15 +77,20 @@ function getStoreInfo(playerID) {
 
 function getListCardFull(list_card) {
 	list_card.forEach(function(card){
-		card.current_score = getCardScore(card, card.current_level);
-		card.current_energy = getCardEnergy(card, card.current_level);
-		card.next_level = card.current_level < card_level_max ? card.current_level + 1 : card.current_level;
-		card.next_score = getCardScore(card, card.next_level);
-		card.next_energy = getCardEnergy(card, card.next_level);
-		card.next_number = getCardNumberNeed(card.rarity, card.next_level);
-		card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
+		card = getCardFull(card);
 	});
 	return list_card;
+}
+
+function getCardFull(card) {
+	card.current_score = getCardScore(card, card.current_level);
+	card.current_energy = getCardEnergy(card, card.current_level);
+	card.next_level = card.current_level < card_level_max ? card.current_level + 1 : card.current_level;
+	card.next_score = getCardScore(card, card.next_level);
+	card.next_energy = getCardEnergy(card, card.next_level);
+	card.next_number = getCardNumberNeed(card.rarity, card.next_level);
+	card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
+	return card;
 }
 
 function getCardStore(playerID, cardID) {

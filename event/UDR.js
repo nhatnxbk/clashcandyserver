@@ -186,6 +186,11 @@ if (data.buy_card) {
 				"result" : false,
 				"message" : "Not enough coin to buy this card"
 			}
+		} else if (cardStore.number >= cardStore.max_number) {
+			response = {
+				"result" : false,
+				"message" : "Over number card can bought!"
+			}
 		} else {
 			playerCoin -= cost;
 			var numberCard = buy_all ? cardStore.max_number - cardStore.number : 1;
@@ -203,6 +208,7 @@ if (data.buy_card) {
 				cardPlayer = cardMaster.findOne({"card_id":cardStore.card_id});
 				cardPlayer.current_level = 1;
 				cardPlayer.current_number = numberCard;
+				cardPlayer = getCardFull(cardPlayer);
 				var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 				listPlayerCard.push(cardPlayer);
 				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"card_data":listPlayerCard}}, true, false);
