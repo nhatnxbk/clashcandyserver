@@ -115,15 +115,19 @@ if (data.buy_item) {
 	var pack_id = data.pack_id;
 	var packItem = storeMaster.findOne({"pack_id":pack_id});
 	var playerCoin = playerData.player_coin ? playerData.player_coin : 0;
+	var playerExp = playerData.current_exp ? playerData.current_exp : 0;
 	var response;
 	if (packItem) {
 		if (packItem.item_type == server_config.PACK_ITEM_TYPE.coin) {
 			playerCoin += packItem.number;
-			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin}}, true, false);
+			playerExp ++;
+			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp}}, true, false);
+			var levelInfo = getPlayerLevelInfo(playerID);
 			response = {
 				"result" : true,
 				"message" : "Buy success",
-				"player_coin" : playerCoin
+				"player_coin" : playerCoin,
+				"level_info" : levelInfo
 			};
 		} else if (packItem.item_type == server_config.PACK_ITEM_TYPE.life) {
 			if (playerCoin < packItem.cost) {
@@ -133,14 +137,17 @@ if (data.buy_item) {
 				};
 			} else {
 				playerCoin -= packItem.cost;
+				playerExp ++;
 				var playerLife = playerData.player_life ? playerData.player_life : 0;
 				playerLife += packItem.number;
-				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "player_life":playerLife}}, true, false);
+				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "player_life":playerLife}}, true, false);
+				var levelInfo = getPlayerLevelInfo(playerID);
 				response = {
 					"result" : true,
 					"message" : "Buy success",
 					"player_life" : playerLife,
-					"player_coin" : playerCoin
+					"player_coin" : playerCoin,
+					"level_info" : levelInfo
 				};
 			}
 		} else if (packItem.item_type == server_config.PACK_ITEM_TYPE.bomb) {
@@ -176,6 +183,8 @@ if (data.buy_card) {
 	var card_id = data.card_id;
 	var buy_all = data.buy_all ? data.buy_all : 0;
 	var playerCoin = playerData.player_coin ? playerData.player_coin : 0;
+	// dung hoac ko
+	var playerExp = playerData.current_exp ? playerData.current_exp : 0;
 	var cardStore = getCardStore(playerID, card_id);
 	var cardPlayer = getCardPlayer(playerID, card_id);
 	var response;
@@ -194,6 +203,7 @@ if (data.buy_card) {
 		} else {
 			playerCoin -= cost;
 			var numberCard = buy_all ? cardStore.max_number - cardStore.number : 1;
+			playerExp += numberCard;
 			cardStore.number += numberCard;
 			cardStore.cost = getCardCost(cardStore.number, cardStore.card_rarity);
 			cardStore.cost_all = getAllCardCost(cardStore.number, cardStore.card_rarity);
@@ -203,7 +213,7 @@ if (data.buy_card) {
 			if (cardPlayer) {
 				cardPlayer.current_number += numberCard;
 				playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
-					{"$set":{"player_coin":playerCoin, "card_data.$.current_number": cardPlayer.current_number}}, true, false);
+					{"$set":{"player_coin":playerCoin, "current_exp": playerExp, "card_data.$.current_number": cardPlayer.current_number}}, true, false);
 			} else {
 				cardPlayer = cardMaster.findOne({"card_id":cardStore.card_id});
 				cardPlayer.current_level = 1;
@@ -211,14 +221,16 @@ if (data.buy_card) {
 				cardPlayer = getCardFull(cardPlayer);
 				var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 				listPlayerCard.push(cardPlayer);
-				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"card_data":listPlayerCard}}, true, false);
+				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"current_exp": playerExp,"card_data":listPlayerCard}}, true, false);
 			}
+			var levelInfo = getPlayerLevelInfo(playerID);
 			response = {
 				"result" : true,
 				"message" : "Buy success",
 				"card_store" : cardStore,
 				"card_player" : cardPlayer,
-				"player_coin" : playerCoin
+				"player_coin" : playerCoin,
+				"level_info" : levelInfo
 			}
 		}
 	} else {
