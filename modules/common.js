@@ -21,6 +21,18 @@ function getPlayerLevelInfo(playerID) {
 	return levelInfo;
 }
 
+function getPlayerLevelInfoByExp(currentExp) {
+	var levelInfo = {};
+	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
+	if (levelArr.length > 0) {
+	  var nextLevel = levelArr[0];
+	  levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
+	  levelInfo.current_exp = currentExp;
+	  levelInfo.next_exp = nextLevel.exp;
+	}
+	return levelInfo;
+}
+
 function getStoreInfo(playerID) {
 	var storeInfo = {};
 	var packCoin = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.coin}).toArray();
@@ -190,4 +202,22 @@ function getAllCardCost(currentNumber, rarity) {
 		costTotal += costDefault * i;
 	}
 	return costTotal;
+}
+
+function getCoinBattleWin(playerID) {
+	var playerData = playerCollection.findOne({"playerID":playerID});
+	var level = playerData.current_level ? playerData.current_level : 1;
+	return level > 0 && level <= server_config.coin_battle_win.length ? server_config.coin_battle_win[level - 1] : server_config.coin_battle_win[0];
+}
+
+function getExpBattleWin() {
+	var playerData = playerCollection.findOne({"playerID":playerID});
+	var level = playerData.current_level ? playerData.current_level : 1;
+	return level > 0 && level <= server_config.exp_battle_win.length ? server_config.exp_battle_win[level - 1] : server_config.exp_battle_win[0];
+}
+
+function getExpBattleLose() {
+	var playerData = playerCollection.findOne({"playerID":playerID});
+	var level = playerData.current_level ? playerData.current_level : 1;
+	return level > 0 && level <= server_config.exp_battle_lose.length ? server_config.exp_battle_lose[level - 1] : server_config.exp_battle_lose[0];
 }

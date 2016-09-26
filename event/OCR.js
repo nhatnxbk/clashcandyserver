@@ -162,8 +162,10 @@ if(data.online_match_end ){
 	server.remove({"playerID":op_id});
 	var onlineMatchList = Spark.runtimeCollection("OnlineMatch");
 	var online_match_data =onlineMatchList.findOne({"playerID":playerID});
+	var bonus_coin = 0;
+	var bonus_exp = 0;
 	if(data.game_type != "friend"){
-			if(online_match_data !== null && !online_match_data.is_finish){
+		if(online_match_data !== null && !online_match_data.is_finish){
 			if(isWin || isDraw){
 				var currentPlayer = Spark.getPlayer();
 				var bonus_trophies = get_bonus_trophies_win(online_match_data.my_trophy,online_match_data.opponent_trophy);
@@ -171,8 +173,11 @@ if(data.online_match_end ){
 				if(!currentPlayerData.trophies) currentPlayerData.trophies = 0;
 				if(isWin){
 					currentPlayerData.online_win = currentPlayerData.online_win ? (currentPlayerData.online_win+1) : 1;
+					bonus_coin = getCoinBattleWin(playerID);
+					bonus_exp  = getExpBattleWin(playerID);
 				}else if(isDraw){
 					bonus = 0;
+					bonus_exp  = getExpBattleLose(playerID);
 				}
 				currentPlayerData.trophies = (online_match_data.my_trophy + bonus);
 				if(!currentPlayerData.highest_trophy) currentPlayerData.highest_trophy = currentPlayerData.trophies;
@@ -183,7 +188,9 @@ if(data.online_match_end ){
 			}else{
 				currentPlayerData.online_lose = currentPlayerData.online_lose ? (currentPlayerData.online_lose+1) : 0;
 				bonus = -get_bonus_trophies_lost(online_match_data.my_trophy,online_match_data.opponent_trophy);
+				bonus_exp  = getExpBattleLose(playerID);
 			}
+
 			online_match_data.is_finish = true;
 			//rank of myPlayer after match_end
 			myRank = get_current_rank_with_friends();
@@ -192,6 +199,14 @@ if(data.online_match_end ){
 		}else{
 			bonus = 0;
 		}
+		//update coin and exp
+		var playerCoin = currentPlayerData.player_coin ? currentPlayerData.player_coin : 0;
+		playerCoin += bonus_coin;
+		var playerExp = currentPlayerData.current_exp ? currentPlayerData.current_exp : 0;
+		playerExp += bonus_exp;
+		var levelInfo = getPlayerLevelInfoByExp(playerExp);
+		playerDataList.update({"playerID":playerID},{"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level}}, true, false);
+
 		var save_data = {"playerID":playerID,"my_score":my_score,"op_id":op_id,"op_score":op_score,"draw":isDraw,"win":isWin,"data":online_match_data};
 		Spark.getLog().debug(save_data);
 		var result = Spark.sendRequest({
@@ -203,7 +218,7 @@ if(data.online_match_end ){
 		});
 		Spark.setScriptData("data", {"bonus" : bonus,"trophies": currentPlayerData.trophies,"online_win":currentPlayerData.online_win,
 			"online_match_start":currentPlayerData.online_match_start,"highest_trophy":currentPlayerData.highest_trophy,
-			"rank_before":online_match_data.rank_before, "rank_after": online_match_data.rank_after});
+			"rank_before":online_match_data.rank_before, "rank_after": online_match_data.rank_after, "bonus_coin":bonus_coin, "level_info":levelInfo});
 	}else{
 		remove_room();
 	}

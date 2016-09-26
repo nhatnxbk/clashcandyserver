@@ -121,8 +121,8 @@ if (data.buy_item) {
 		if (packItem.item_type == server_config.PACK_ITEM_TYPE.coin) {
 			playerCoin += packItem.number;
 			playerExp ++;
-			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp}}, true, false);
-			var levelInfo = getPlayerLevelInfo(playerID);
+			var levelInfo = getPlayerLevelInfoByExp(playerExp);
+			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level}}, true, false);
 			response = {
 				"result" : true,
 				"message" : "Buy success",
@@ -140,8 +140,8 @@ if (data.buy_item) {
 				playerExp ++;
 				var playerLife = playerData.player_life ? playerData.player_life : 0;
 				playerLife += packItem.number;
-				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "player_life":playerLife}}, true, false);
-				var levelInfo = getPlayerLevelInfo(playerID);
+				var levelInfo = getPlayerLevelInfoByExp(playerExp);
+				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level,"player_life":playerLife}}, true, false);
 				response = {
 					"result" : true,
 					"message" : "Buy success",
@@ -207,13 +207,14 @@ if (data.buy_card) {
 			cardStore.number += numberCard;
 			cardStore.cost = getCardCost(cardStore.number, cardStore.card_rarity);
 			cardStore.cost_all = getAllCardCost(cardStore.number, cardStore.card_rarity);
+			var levelInfo = getPlayerLevelInfoByExp(playerExp);
 			storeDaily.update({"$and":[{"playerID":playerID},{"pack_card.card_id":cardStore.card_id}]},
 				{"$set":{"pack_card.$.number": cardStore.number, "pack_card.$.max_number": cardStore.max_number,
 				"pack_card.$.cost": cardStore.cost, "pack_card.$.cost_all": cardStore.cost_all}}, true, false);
 			if (cardPlayer) {
 				cardPlayer.current_number += numberCard;
 				playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
-					{"$set":{"player_coin":playerCoin, "current_exp": playerExp, "card_data.$.current_number": cardPlayer.current_number}}, true, false);
+					{"$set":{"player_coin":playerCoin, "current_exp": playerExp, "current_level":levelInfo.level, "card_data.$.current_number": cardPlayer.current_number}}, true, false);
 			} else {
 				cardPlayer = cardMaster.findOne({"card_id":cardStore.card_id});
 				cardPlayer.current_level = 1;
@@ -221,9 +222,8 @@ if (data.buy_card) {
 				cardPlayer = getCardFull(cardPlayer);
 				var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 				listPlayerCard.push(cardPlayer);
-				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"current_exp": playerExp,"card_data":listPlayerCard}}, true, false);
+				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"current_exp": playerExp, "current_level":levelInfo.level, "card_data":listPlayerCard}}, true, false);
 			}
-			var levelInfo = getPlayerLevelInfo(playerID);
 			response = {
 				"result" : true,
 				"message" : "Buy success",

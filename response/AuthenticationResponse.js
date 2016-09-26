@@ -57,6 +57,11 @@ if(timeDelta < TIME_FB_INVITE){
 }else{
     currentPlayer.can_fb_invite = true;
 }
+
+var levelInfo = getPlayerLevelInfo(playerID);
+if (levelInfo) {
+  currentPlayer.current_level = levelInfo.level;
+}
 var response = Spark.sendRequest({"@class":".AccountDetailsRequest"});
 currentPlayer.location =  response.location;
 playerCollection.update({"playerID": playerID}, {"$set": currentPlayer}, true,false);
@@ -81,7 +86,6 @@ delete currentPlayer.rto_4;
 delete currentPlayer.rto_5;
 
 //player level info
-var levelInfo = getPlayerLevelInfo(playerID);
 if (levelInfo) {
   currentPlayer.level_info = levelInfo;
 }
