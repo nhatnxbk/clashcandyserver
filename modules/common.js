@@ -5,6 +5,7 @@ var playerCollection = Spark.runtimeCollection("playerData");
 var storeMaster = Spark.metaCollection("store_master");
 var storeDaily = Spark.runtimeCollection("store_daily");
 var cardMaster = Spark.metaCollection("card_master");
+var chestMaster = Spark.metaCollection("chest_master");
 var timeNow = Date.now();
 
 function getPlayerLevelInfo(playerID) {
@@ -220,4 +221,68 @@ function getExpBattleLose() {
 	var playerData = playerCollection.findOne({"playerID":playerID});
 	var level = playerData.current_level ? playerData.current_level : 1;
 	return level > 0 && level <= server_config.exp_battle_lose.length ? server_config.exp_battle_lose[level - 1] : server_config.exp_battle_lose[0];
+}
+
+function getChestDataMasterByProbability(probability) {
+	if (probability === undefined) {
+		probability = Math.floor(Math.random() * 100);
+	}
+	var chestMasterArr = chestMaster.find().toArray();
+	for (var i = 0; i < chestMasterArr.length; i++) {
+		var chestDataMaster = chestMasterArr[i];
+		if (chestDataMaster.probability_start <= probability && probability < chestDataMaster.probability_end) {
+			return chestDataMaster;
+		}
+	}
+}
+
+function getChestDataMasterByType(type) {
+	var chestDataMaster = chestMaster.findOne({"type":type});
+	return chestDataMaster;
+}
+
+//chest data get from chest master
+function getChestData(chestDataMaster) {
+	var chestData;
+	var listCard = [];
+	var listCardID = [];
+	// var listCardRarity = [];
+	var totalNumberCard = 0;
+	while(totalNumberCard < chestDataMaster.number_card) {
+		var cardResult = {};
+		var cardRewardMaster = getCardByProbability(chestDataMaster.card);
+		var listCardMaster = cardMaster.find({"rarity":cardRewardMaster.rarity}).toArray();
+		var idx = Math.floor(Math.random() * listCardMaster.length);
+		var card = listCardMaster[idx];
+		if (listCardID.indexOf(card.card_id) != -1) {
+			continue;
+		}
+		var number = Math.ceil(Math.random() * cardRewardMaster.number_card_max);
+		if (totalNumberCard + number > chestDataMaster.number_card) {
+			number = chestDataMaster.number_card - totalNumberCard;
+		}
+		card.current_level = 1;
+		card.current_number = number;
+		card = getCardFull(card);
+		totalNumberCard += number;
+		listCard.push(card);
+		listCardID.push(card.card_id);
+	}
+	chestData = {
+		"type": chestDataMaster.type,
+		"description" : chestDataMaster.description,
+		"time_open" : getTimeNow(),
+		"time_out" : chestDataMaster.time,
+		"card" : listCard
+	}
+	return chestData;
+}
+
+function getCardByProbability(listCard) {
+	var probability = Math.floor(Math.random() * 100);
+	for (var i = 0; i < listCard.length; i++) {
+		if (listCard[i].probability_start <= probability && probability < listCard[i].probability_end) {
+			return listCard[i];
+		}
+	}
 }

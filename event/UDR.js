@@ -266,6 +266,13 @@ if (data.debug_add_card) {
     Spark.setScriptData("data", response);
 }
 
+if (data.debug_get_chest) {
+	var chest_type = data.chest_type ? data.chest_type : 0;
+	var chestDataMaster = chest_type ? getChestDataMasterByType(chest_type) : getChestDataMasterByProbability();
+	var chestData = getChestData(chestDataMaster);
+	Spark.setScriptData("data", chestData);
+}
+
 //=====================function======================//
 
 function getCardData(id) {
