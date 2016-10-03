@@ -1,10 +1,30 @@
 //=========User Data Request Controller============//
 require("share");
 require("common");
+var userFeedbackData = Spark.runtimeCollection("user_feedback");
+var userNotice = Spark.runtimeCollection("user_notice");
 var playerID = Spark.getPlayer().getPlayerId();
 var playerData = playerCollection.findOne({"playerID":playerID});
 var data = Spark.getData().data;
 if(!data) data = {};
+
+//update one signal player id
+if (data.one_signal_player_id) {
+	var response;
+	if (data.userId) {
+		playerCollection.update({"playerID":playerID}, {"$set":{"one_signal_player_id":data.userId}}, true, false);
+		response = {
+			"result"  : true,
+			"message" : "Update one signal player id success"
+		}
+	} else {
+		response = {
+			"result"  : false,
+			"message" : "Update one signal player id failure"
+		}
+	}
+	Spark.setScriptData("data", response);
+}
 
 //get player card data
 if (data.get_card_data) {
@@ -242,6 +262,136 @@ if (data.buy_card) {
 	Spark.setScriptData("data", response);
 }
 
+//add feedback
+if (data.user_feedback) {
+	var title = data.title ? data.title : "User Feedback";
+	var content = data.content ? data.content : "No feedback from user!";
+	var feedback = {
+		"playerID": playerID,
+		"title"   : title,
+		"feedback": content,
+		"time"    : timeNow
+	}
+	userFeedbackData.insert(feedback);
+	var response = {
+		"result"   : true,
+		"message"  : "Your feedback was sent!",
+		"feedback" : feedback
+	}
+	var userName = playerData.userName ? playerData.userName : "UserFeedback";
+	var listAdmin = getAdmin();
+	var message = content;
+	if (!isAdmin()) {
+		var push = SendNewNotification(listAdmin, [], [], {"en" : title}, {"en": message}, null).getResponseJson();
+	}
+	Spark.setScriptData("data",response);
+}
+
+//get feedback
+if (data.get_user_feedback) {
+	var feedback = getUserFeedback();
+	playerCollection.update({"playerID":playerID}, {"$set": {"last_read":timeNow}}, true, false);
+	Spark.setScriptData("data", feedback);
+}
+
+//get all feedback
+if (data.get_all_feedback) {
+	var limit = data.limit ? data.limit : 100;
+	var feedbacks = userFeedbackData.find().limit(limit).sort({"response":1,"time":-1}).toArray();
+	for (var i = 0; i < feedbacks.length; i++) {
+		feedbacks[i].time = timeNow - feedbacks[i].time;
+		feedbacks[i].type = 1;
+		feedbacks[i].is_new = 0;
+	}
+	Spark.setScriptData("data", feedbacks);
+}
+
+//reponse feedback
+if (data.response_feedback) {
+	var feedbackID   = data.id ? data.id : 0;
+	var responseData = data.response ? data.response : undefined;
+	var response;
+	var is_show_android_store = data.is_show_android_store;
+	var is_show_ios_store = data.is_show_ios_store;
+	if (feedbackID && responseData) {
+		var feedbackPlayerID = userFeedbackData.findOne({"_id":{$oid:feedbackID}}).playerID;
+		var oneSignalPlayerID = getOneSignalPlayerID(feedbackPlayerID);
+		var saveData = {"response":responseData,"time":timeNow};
+		if (oneSignalPlayerID) {
+			var push = SendNewNotification([oneSignalPlayerID], [], [], {"en" : "Picachu Online Response Feedback"}, {"en" : responseData}, null).getResponseJson();
+		}
+		if(is_show_android_store){
+			saveData.button_name = "Rate 5 star";
+			saveData.url = "https://play.google.com/store/apps/details?id=com.SunnyMonkey.PikachuOnline";
+		}
+		if(is_show_ios_store){
+			saveData.button_name = "Rate 5 star";
+			saveData.url = "https://itunes.apple.com/vn/app/pukachi-online/id1068833233?mt=8";
+		}
+		userFeedbackData.update({"_id":{$oid:feedbackID}}, {"$set":saveData}, true, false);
+		response = {
+			"result" : true,
+			"message": "Response success!"
+		}
+	} else {
+		response = {
+			"result"  : false,
+			"message" : "Response failure!"
+		}
+	}
+	Spark.setScriptData("data",response);
+}
+
+//add notice
+if (data.add_notice) {
+	var title = data.title ? data.title : {"en": "Pika Notice"};
+	var content = data.content ? data.content : {"en" : "No have notice!"};
+	var playerID = data.playerID ? data.playerID : "all";
+	var notice = {
+		"playerID": playerID,
+		"title"   : title,
+		"message" : content,
+		"time"    : timeNow
+	}
+	userNotice.insert(notice);
+	var response = {
+		"result"  : true,
+		"message" : "Add notice success!",
+		"notice"  : notice
+	}
+	if (playerID == "all") {
+	    //khi nao release bo comment
+        SendNewNotification([], ["All"], [], title, content, null).getResponseJson();
+	} else {
+		var oneSignalPlayerID = getOneSignalPlayerID(playerID);
+		if (oneSignalPlayerID) {
+			var push = SendNewNotification([oneSignalPlayerID], [], [], title, content, null).getResponseJson();
+		}
+	}
+	Spark.setScriptData("data",response);
+}
+
+//get notice without feedback
+if (data.get_notice_without_feedback) {
+	var notice = getNotice();
+	playerCollection.update({"playerID":playerID}, {"$set": {"last_read":timeNow}}, true, false);
+	Spark.setScriptData("data", notice);
+}
+
+//get all notice
+if (data.get_notice) {
+	var feedback = getUserFeedback();
+	var notice = getNotice();
+	var allNotice = feedback.concat(notice);
+	allNotice.sort(function(a,b){
+		return a.time - b.time;
+	});
+	var limit = isAdmin() ? NUM_NOTICE_ADMIN : NUM_NOTICE;
+	allNotice = allNotice.slice(0, limit);
+	playerCollection.update({"playerID":playerID}, {"$set": {"last_read":timeNow}}, true, false);
+	Spark.setScriptData("data", allNotice);
+}
+
 //=====================RQ debug======================//
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
@@ -273,6 +423,28 @@ if (data.debug_get_chest) {
 	Spark.setScriptData("data", chestData);
 }
 
+if (data.debug_add_card_master) {
+	// var card_id = 8;
+	// for (var i = 1; i < 6; i++) {
+	// 	for(var j = i+1; j < 7; j++) {
+	// 		var cardData = {
+	// 			"card_id": card_id,
+	// 			"type": 1,
+	// 			"rarity": 2,
+	// 			"current_level": 1,
+	// 			"current_number": 0,
+	// 			"card_default": 0,
+	// 			"color_id1": i,
+	// 			"color_id2": j,
+	// 			"card_energy" : [60,58,56,54,52,50,47,44,40,33],
+	// 			"card_score" : [25,30,35,40,45,55,65,75,85,100]
+	// 		}
+	// 		cardMaster.insert(cardData);
+	// 		card_id++;
+	// 	}
+	// }
+}
+
 //=====================function======================//
 
 function getCardData(id) {
@@ -285,4 +457,73 @@ function getCardData(id) {
     	}
     }
     return null;
+}
+
+function isVN() {
+  return (playerData.location && playerData.location.country == "VN") ? true : false;
+}
+
+function isAdmin() {
+  if (LIST_ADMIN.indexOf(playerID) != -1) {
+    return 1;
+  }
+  return 0;
+}
+
+function getAdmin() {
+	var listAdmin = playerCollection.find({"playerID":{"$in": LIST_ADMIN}}).toArray();
+	var adminsPush = [];
+	for (var i = 0; i < listAdmin.length; i++) {
+		if (listAdmin[i].one_signal_player_id) {
+			adminsPush.push(listAdmin[i].one_signal_player_id);
+		}
+	}
+	return adminsPush;
+}
+
+function getOneSignalPlayerID(player_id) {
+	var player = playerCollection.findOne({"playerID":player_id});
+	return player ? player.one_signal_player_id : "";
+}
+
+function getNotice () {
+	var notice = userNotice.find({$and:[{$or:[{"playerID":"all"},{"playerID":playerID}]}, {"time":{"$lt":timeNow}}]}).limit(NUM_NOTICE).sort({"time":-1}).toArray();
+	var lastTimeRead = playerData.last_read ? playerData.last_read : 0;
+	var isVN = playerData.location && playerData.location.country && playerData.location.country == "VN" ? true : false;
+	for (var i = 0; i < notice.length; i++) {
+		notice[i].is_new = notice[i].time >= lastTimeRead ? 1 : 0;
+		notice[i].time = timeNow - notice[i].time;
+		notice[i].title = isVN && notice[i].title.vi ? "Notice: " + notice[i].title.vi : "Notice: " + notice[i].title.en;
+		notice[i].message = isVN && notice[i].message.vi ? "Notice: " + notice[i].message.vi : "Notice: " + notice[i].message.en;
+		notice[i].type = 0;
+	}
+	return notice;
+}
+
+function getUserFeedback () {
+	var feedbacks;
+	if (isAdmin()) {
+		feedbacks = userFeedbackData.find({"time":{"$lt":timeNow}}).limit(NUM_NOTICE_ADMIN).sort({"response":1,"time":-1}).toArray();
+	} else {
+		feedbacks = userFeedbackData.find({"playerID":playerID}).limit(NUM_NOTICE).sort({"time":-1}).toArray();
+	}
+	var lastTimeRead = playerData.last_read ? playerData.last_read : 0;
+	for (var i = 0; i < feedbacks.length; i++) {
+		var feedback = feedbacks[i];
+		feedback.is_new = feedback.time >= lastTimeRead ? 1 : 0;
+		feedback.time = timeNow - feedback.time;
+		feedback.type = 1;
+		if (isAdmin()) {
+			var userFeedback = playerCollection.findOne({"playerID":feedback.playerID});
+			var userSys = playerDataSys.findOne({"_id":{"$oid":feedback.playerID}});
+			feedback.feedback = feedback.feedback + "\n"
+			+ "UserName : " + userFeedback.userName + ". "
+			+ "Trophies : " + userFeedback.trophies + ". "
+			+ "Total Win : " + userFeedback.online_win + ". "
+			+ "Online match : " + userFeedback.online_match_start + ". "
+			+ "Bot match : " + userFeedback.online_bot_start + ". "
+			+ "OS : " + userSys.userName;
+		}
+	}
+	return feedbacks;
 }

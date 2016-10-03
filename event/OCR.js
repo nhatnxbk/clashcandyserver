@@ -388,20 +388,3 @@ function get_bonus_trophies_lost(myTrophies, oppoentTrophies) {
 	}
 	return bonus - bonusByOffset;
 }
-if (data.push_notification) {
-    var response = SendNewNotification().getResponseJson();
-    Spark.setScriptData("response", response);
-}
-
-function SendNewNotification() {
-  var jsonBody = {
-    "app_id": "b2c8f180-b9b8-4ab6-85e2-cd6c8c1c02e7",
-    "included_segments": ["All"],
-    "contents": {"en": "There is message push from GS to your application via OneSignal"},
-  };
-  var promise = Spark.getHttp("https://onesignal.com/api/v1/notifications").setHeaders({
-    "Content-Type": "application/json;charset=utf-8",
-    "Authorization": "Basic MGJkOWRjZTAtZGU5Mi00Njk1LTgwYWMtNDUwMWI0NmNiODc3"
-  }).postJson(jsonBody);
-  return promise;
-}

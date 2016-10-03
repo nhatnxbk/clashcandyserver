@@ -8,6 +8,29 @@ var cardMaster = Spark.metaCollection("card_master");
 var chestMaster = Spark.metaCollection("chest_master");
 var timeNow = Date.now();
 
+function SendNewNotification(include_player_ids, included_segments, excluded_segments, title, message, data) {
+  var jsonBody = {
+    "app_id": "b2c8f180-b9b8-4ab6-85e2-cd6c8c1c02e7",
+    "excluded_segments": excluded_segments,
+    "headings" : title,
+    "contents" : message
+  };
+  if (include_player_ids.length > 0) {
+      jsonBody.include_player_ids = include_player_ids;
+  }
+  if (included_segments.length > 0) {
+      jsonBody.included_segments = included_segments;
+  }
+  if (data) {
+    jsonBody.data = data;
+  }
+   var promise = Spark.getHttp("https://onesignal.com/api/v1/notifications").setHeaders({
+    "Content-Type": "application/json;charset=utf-8",
+    "Authorization": "Basic MGJkOWRjZTAtZGU5Mi00Njk1LTgwYWMtNDUwMWI0NmNiODc3"
+  }).postJson(jsonBody);
+  return promise;
+}
+
 function getPlayerLevelInfo(playerID) {
 	var levelInfo = {};
 	var playerData = playerCollection.findOne({"playerID":playerID});
