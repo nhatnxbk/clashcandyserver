@@ -27,7 +27,7 @@ if (!currentPlayer.card_data) {
   for(var i = 0; i < cardData.length; i++) {
       var card = cardData[i];
       card.current_level = 1;
-      card.current_number = 0;
+      card.current_number = 1;
   }
   currentPlayer.card_data = cardData;
 }

@@ -294,7 +294,6 @@ function getChestData(chestDataMaster) {
 	chestData = {
 		"type": chestDataMaster.type,
 		"description" : chestDataMaster.description,
-		"time_open" : getTimeNow(),
 		"time_out" : chestDataMaster.time,
 		"card" : listCard
 	}
@@ -307,5 +306,47 @@ function getCardByProbability(listCard) {
 		if (listCard[i].probability_start <= probability && probability < listCard[i].probability_end) {
 			return listCard[i];
 		}
+	}
+}
+
+function addChestToPlayer(playerID, chestData) {
+	var playerData = playerCollection.findOne({"playerID":playerID});
+	var message;
+	if (!playerData.chest_data) playerData.chest_data = {};
+	if (!playerData.chest_data.chest1) {
+		chestData.chest_id = 1;
+		playerData.chest_data.chest1 = chestData;
+		message = "Add chest to chest slot 1";
+	} else if (!playerData.chest_data.chest2) {
+		chestData.chest_id = 2;
+		playerData.chest_data.chest2 = chestData;
+		message = "Add chest to chest slot 2";
+	} else if (!playerData.chest_data.chest3) {
+		chestData.chest_id = 3;
+		playerData.chest_data.chest3 = chestData;
+		message = "Add chest to chest slot 3";
+	} else if (!playerData.chest_data.chest4) {
+		chestData.chest_id = 4;
+		playerData.chest_data.chest4 = chestData;
+		message = "Add chest to chest slot 4";
+	} else {
+		message = "Chest slot full, can not add chest";
+	}
+	playerCollection.update({"playerID":playerID},{"$set":{"chest_data":playerData.chest_data}}, true, false);
+	return message;
+}
+
+function getCoinNeedToOpenChest(timeRemain) {
+	var coin = Math.ceil(server_config.coin_need_open_chest_per_seconds * timeRemain);
+	return coin;
+}
+
+function getChestStatus(chest) {
+	if (chest.time_open && timeNow - chest.time_open < chest.time_out) {
+		return server_config.chest_status.opening;
+	} else if (chest.time_open && timeNow - chest.time_open >= chest.time_out) {
+		return server_config.chest_status.opened;
+	} else {
+		return server_config.chest_status.locked;
 	}
 }

@@ -7,6 +7,7 @@ var playerID = Spark.getPlayer().getPlayerId();
 var playerData = playerCollection.findOne({"playerID":playerID});
 var data = Spark.getData().data;
 if(!data) data = {};
+var timeNow = getTimeNow();
 
 //update one signal player id
 if (data.one_signal_player_id) {
@@ -392,6 +393,112 @@ if (data.get_notice) {
 	Spark.setScriptData("data", allNotice);
 }
 
+//open chest
+if (data.open_chest) {
+	var chest_id = data.chest_id;
+	var response;
+	if (chest_id) {
+		var chest = getPlayerChest(chest_id);
+		if (chest) {
+			var chestOpening = getChestOpening();
+			if (timeNow - chest.time_open >= chest.time_out) {
+				response = {
+					"result" : false,
+					"message" : "This chest opened. Can't open again!"
+				}
+			} else if (chestOpening) {
+				response = {
+					"result" : false,
+					"message" : "Other chest is opening."
+				}
+			} else {
+				chest.time_open = timeNow;
+				playerData.chest_data["chest"+chest_id] = chest;
+				playerCollection.update({"playerID":playerID},{"$set":{"chest_data":playerData.chest_data}}, true, false);
+				response = {
+					"result" : true,
+					"message" : "Chest " + chest_id + " is opening."
+				}
+			}
+		} else {
+			response = {
+				"result" : false,
+				"message" : "Can't found chest"
+			}
+		}
+	} else {
+		response = {
+			"result" : false,
+			"message" : "Can't found chest"
+		}
+	}
+	Spark.setScriptData("data", response);
+}
+
+//claim chest
+if (data.claim_chest) {
+	var chest_id = data.chest_id;
+	var useCoin = data.use_coin ? data.use_coin : false;
+	var response;
+	if (chest_id) {
+		var chest = getPlayerChest(chest_id);
+		if (chest) {
+			var chestStatus = getChestStatus(chest);
+			if (chestStatus.status == server_config.chest_status.locked.status) {
+				response = {
+					"result" : false,
+					"message" : "This chest is locked!"
+				}
+			} else if (chestStatus.status == server_config.chest_status.opening.status) {
+				if (useCoin) {
+					if (!playerData.player_coin) playerData.player_coin = 0;
+					var timeOut = chest.time_out;
+					var timeOpen = chest.time_open;
+					var timeNow2 = timeNow;
+					var timeRemain = (chest.time_out - (timeNow - chest.time_open)) / 1000;
+					var coinNeed = getCoinNeedToOpenChest(Math.ceil(timeRemain));
+					if (playerData.player_coin < coinNeed) {
+						response = {
+							"result" : false,
+							"message" : "Not enough coin to open this chest!"
+						}
+					} else {
+						playerData.player_coin = playerData.player_coin - coinNeed;
+						var listCardResult = _claimChest(chest);
+						response = {
+							"result" : true,
+							"message": "Claim chest by coin success",
+							"list_card": listCardResult
+						}
+					}
+				} else {
+					response = {
+						"result" : false,
+						"message" : "This chest is opening, please wait!"
+					}
+				}
+			} else if (chestStatus.status == server_config.chest_status.opened.status) {
+				var listCardResult = _claimChest(chest);
+				response = {
+					"result" : true,
+					"message" : "Claim chest success",
+					"list_card":listCardResult
+				}
+			}
+		} else {
+			response = {
+				"result" : false,
+				"message" : "Can't found chest"
+			}
+		}
+	} else {
+		response = {
+			"result" : false,
+			"message" : "Can't found chest"
+		}
+	}
+	Spark.setScriptData("data", response);
+}
 //=====================RQ debug======================//
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
@@ -421,6 +528,53 @@ if (data.debug_get_chest) {
 	var chestDataMaster = chest_type ? getChestDataMasterByType(chest_type) : getChestDataMasterByProbability();
 	var chestData = getChestData(chestDataMaster);
 	Spark.setScriptData("data", chestData);
+}
+
+if (data.debug_add_chest) {
+	var player_id = data.player_id ? data.player_id : playerID;
+	var chest_type = data.chest_type ? data.chest_type : 0;
+	var chestDataMaster = chest_type ? getChestDataMasterByType(chest_type) : getChestDataMasterByProbability();
+	var chestData = getChestData(chestDataMaster);
+	var result = addChestToPlayer(player_id, chestData);
+	var response = {
+		"result" : result,
+		"chestData" : chestData
+	}
+	Spark.setScriptData("data", response);
+}
+
+if (data.debug_get_player_chest_status) {
+	var player = data.player_id ? playerCollection.findOne({"playerID":player_id}) : playerData;
+	var playerChest = player.chest_data;
+	var response;
+	if (playerChest) {
+		if (playerChest.chest1) {
+			delete playerChest.chest1.card;
+			playerChest.chest1.status = getChestStatus(playerChest.chest1);
+		}
+		if (playerChest.chest2) {
+			delete playerChest.chest2.card;
+			playerChest.chest2.status = getChestStatus(playerChest.chest2);
+		}
+		if (playerChest.chest3) {
+			delete playerChest.chest3.card;
+			playerChest.chest3.status = getChestStatus(playerChest.chest3);
+		}
+		if (playerChest.chest4) {
+			delete playerChest.chest4.card;
+			playerChest.chest4.status = getChestStatus(playerChest.chest4);
+		}
+		response = {
+			"result" : true,
+			"chest_data": playerChest
+		}
+	} else {
+		response = {
+			"result" : false,
+			"message" : "Not found player chest"
+		}
+	}
+	Spark.setScriptData("data", response);
 }
 
 if (data.debug_add_card_master) {
@@ -526,4 +680,65 @@ function getUserFeedback () {
 		}
 	}
 	return feedbacks;
+}
+
+function getPlayerChest(chest_id) {
+	if (!playerData.chest_data) playerData.chest_data = {};
+	return playerData.chest_data["chest"+chest_id];
+}
+
+function getChestOpening() {
+	var chestData = playerData.chest_data;
+	if (chestData) {
+		if (chestData.chest1 && chestData.chest1.time_open && timeNow - chestData.chest1.time_open < chestData.chest1.time_out) {
+			return chestData.chest1;
+		}
+		if (chestData.chest2 && chestData.chest2.time_open && timeNow - chestData.chest2.time_open < chestData.chest2.time_out) {
+			return chestData.chest2;
+		}
+		if (chestData.chest3 && chestData.chest3.time_open && timeNow - chestData.chest3.time_open < chestData.chest3.time_out) {
+			return chestData.chest3;
+		}
+		if (chestData.chest4 && chestData.chest4.time_open && timeNow - chestData.chest4.time_open < chestData.chest4.time_out) {
+			return chestData.chest4;
+		}
+		// if (chestData.chest1 && chestData.chest1.status == server_config.chest_status.opening.status) {
+		// 	return chestData.chest1;
+		// }
+		// if (chestData.chest2 && chestData.chest2.status == server_config.chest_status.opening.status) {
+		// 	return chestData.chest2;
+		// }
+		// if (chestData.chest3 && chestData.chest3.status == server_config.chest_status.opening.status) {
+		// 	return chestData.chest3;
+		// }
+		// if (chestData.chest4 && chestData.chest4.status == server_config.chest_status.opening.status) {
+		// 	return chestData.chest4;
+		// }
+	}
+	return undefined;
+}
+
+function _claimChest(chest) {
+	var listCardResult = [];
+	var cardArr = chest.card;
+	var chestData = playerData.chest_data;
+	delete chestData["chest"+chest.chest_id];
+	cardArr.forEach(function(card) {
+		var cardPlayer = getCardPlayer(playerID, card.card_id);
+		if (cardPlayer) {
+			cardPlayer.current_number += card.current_number;
+			playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
+			{"$set":{"card_data.$.current_number": cardPlayer.current_number, "player_coin":playerData.player_coin, "chest_data":chestData}}, true, false);
+		} else {
+			cardPlayer = cardMaster.findOne({"card_id":card.card_id});
+			cardPlayer.current_level = 1;
+			cardPlayer.current_number = card.current_number;
+			cardPlayer = getCardFull(cardPlayer);
+			var listPlayerCard = playerData.card_data ? playerData.card_data : [];
+			listPlayerCard.push(cardPlayer);
+			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard, "player_coin" : playerData.player_coin},"$unset":{"chest_data":{chestKey:""}}}, true, false);
+		}
+		listCardResult.push(cardPlayer);
+	});
+	return listCardResult;
 }
