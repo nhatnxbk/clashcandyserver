@@ -34,6 +34,7 @@ function SendNewNotification(include_player_ids, included_segments, excluded_seg
 function getPlayerLevelInfo(playerID) {
 	var levelInfo = {};
 	var playerData = playerCollection.findOne({"playerID":playerID});
+	if(playerData == null) playerData = {};
 	var currentExp = playerData.current_exp ? playerData.current_exp : 0;
 	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
 	if (levelArr.length > 0) {
