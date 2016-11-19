@@ -502,25 +502,69 @@ if (data.claim_chest) {
 //=====================RQ debug======================//
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
-    var playerCardData = playerData.card_data;
+	var cardID = data.card_id ? data.card_id : -1;
+    var playerCardData = playerData.card_data ? playerData.card_data : [];
     var response;
-    var reponseCardData = [];
-    for (var i = 0; i < playerCardData.length; i++) {
-    	var cardData = playerCardData[i];
-    	cardData.current_number = cardData.current_number + number;
-    	reponseCardData.push({
-    		"card_id": cardData.card_id,
-	    	"current_number": cardData.current_number
-    	});
+    var cardDataMaster = cardMaster.find().toArray();
+    if (cardID == -1) {
+    	for (var i = 0; i < cardDataMaster.length; i++) {
+    		var isAdded = false;
+    		for (var j = 0; j < playerCardData.length; j++) {
+    			if (cardDataMaster[i].card_id == playerCardData[j].card_id) {
+    				playerCardData[j].current_number = playerCardData[j].current_number + number;
+    				isAdded = true;
+    			}
+    		}
+    		if (!isAdded) {
+    			var card = cardDataMaster[i];
+				card.current_level = 1;
+				card.current_number = number;
+				playerCardData.push(card);
+    		}
+    	}
+    } else {
+    	var isAdded = false;
+    	for (var i = 0; i < playerCardData.length; i++) {
+	    	var cardData = playerCardData[i];
+	    	if (cardData.card_id == cardID) {
+		    	cardData.current_number += number;
+		    	isAdded = true;
+	    	}
+	    }
+	    if (!isAdded) {
+	    	var cardData = cardMaster.findOne({"card_id":cardID});
+	    	if (cardData) {
+	    		cardData.current_number = number;
+	    		cardData.current_level = 1;
+	    		playerCardData.push(cardData);
+	    	}
+	    }
     }
+    
     playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData}});
     response = {
     	"result":true,
     	"message": "You have got " + number + " card for each kind!",
-  		"card_data": reponseCardData
+  		"card_data": getListCardFull(playerCardData)
   	}
 
     Spark.setScriptData("data", response);
+}
+
+if (data.debug_reset_card) {
+	var cardData = cardMaster.find({"card_default":1}).toArray();
+	for(var i = 0; i < cardData.length; i++) {
+		var card = cardData[i];
+		card.current_level = 1;
+		card.current_number = 1;
+	}
+	playerCollection.update({"playerID":playerID},{"$set":{"card_data":cardData}});
+	var response = {
+    	"result":true,
+    	"message": "Reset card success",
+  		"card_data": getListCardFull(cardData)
+  	}
+	Spark.setScriptData("data", response);
 }
 
 if (data.debug_get_chest) {
