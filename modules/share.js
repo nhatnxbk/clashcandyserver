@@ -24,6 +24,8 @@ var TROPHIES_OF_NORMAL_BOT = server_config.TROPHIES_OF_NORMAL_BOT;
 var DEFAULT_COIN = server_config.DEFAULT_COIN;
 var OFFSET_TIME = server_config.DEBUG_OFFSET_TIME;
 var LIST_ADMIN = server_config.LIST_ADMIN;
+var NUM_NOTICE = server_config.NUM_NOTICE;
+var NUM_NOTICE_ADMIN = server_config.NUM_NOTICE_ADMIN;
 //easy
 var rt_1_e = [3, 5, 6, 6, 7, 8, 9, 8, 9, 9, 8, 9, 8, 8, 8, 7];//con 1 cap
 var rt_2_e = [3, 4, 4, 5, 6, 7, 8, 7, 9, 8, 7, 8, 8, 7, 6, 6];// con 2 cap
