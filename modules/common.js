@@ -2,6 +2,7 @@
 require("share");
 var levelMaster = Spark.metaCollection("level_master");
 var playerCollection = Spark.runtimeCollection("playerData");
+var playerDataSys = Spark.systemCollection("player");
 var storeMaster = Spark.metaCollection("store_master");
 var storeDaily = Spark.runtimeCollection("store_daily");
 var cardMaster = Spark.metaCollection("card_master");
