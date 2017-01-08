@@ -499,6 +499,26 @@ if (data.claim_chest) {
 	}
 	Spark.setScriptData("data", response);
 }
+
+//get chest data
+if (data.get_chest_data) {
+	var response;
+	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
+	var chestData = player ? player.chest_data : undefined;
+	if (chestData) {
+		for (var i = 1; i < 5; i++) {
+			if (chestData["chest"+i]) {
+				chestData["chest"+i].status = getChestStatus(chestData["chest"+i]);
+			}
+		}
+	}
+	response = {
+		"result": true,
+		"message": "Get chest data success!",
+		"chest_data" : chestData
+	}
+	Spark.setScriptData("data", response);
+}
 //=====================RQ debug======================//
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
@@ -588,7 +608,7 @@ if (data.debug_add_chest) {
 }
 
 if (data.debug_get_player_chest_status) {
-	var player = data.player_id ? playerCollection.findOne({"playerID":player_id}) : playerData;
+	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
 	var playerChest = player.chest_data;
 	var response;
 	if (playerChest) {
@@ -782,6 +802,7 @@ function _claimChest(chest) {
 			listPlayerCard.push(cardPlayer);
 			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard, "player_coin" : playerData.player_coin},"$unset":{"chest_data":{chestKey:""}}}, true, false);
 		}
+		cardPlayer.added_number = card.current_number;
 		listCardResult.push(cardPlayer);
 	});
 	return listCardResult;
