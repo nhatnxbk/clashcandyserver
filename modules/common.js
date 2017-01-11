@@ -352,3 +352,8 @@ function getChestStatus(chest) {
 		return server_config.chest_status.locked;
 	}
 }
+
+function getExpWhenUpgradeCard(rarity, level) {
+	var exp = server_config.exp_upgrade_card[rarity][level];
+	return exp;
+}

@@ -81,8 +81,8 @@ if (data.upgrade_card && data.card_id !== undefined) {
     var playerCardData = playerData.card_data;
     // var playerCardDataArr = playerCardData ? JSON.parse(playerCardData) : [];
     var playerCoin = playerData.player_coin;
+    if (!playerData.current_exp) playerData.current_exp = 0;
     var response;
-    
     for (var i = 0; i < playerCardData.length; i++) {
     	var cardData = playerCardData[i];
     	if (cardData.card_id == data.card_id) {
@@ -98,10 +98,12 @@ if (data.upgrade_card && data.card_id !== undefined) {
 	    				"message":"Can not enough coin to upgrade this card!"
 	    			}
 	    		} else {
-	    				playerData.player_coin = playerCoin - getCardCoinNeed(cardData.rarity, cardData.current_level + 1);
-	    				cardData.current_number = cardData.current_number - getCardNumberNeed(cardData.rarity, cardData.current_level + 1);
 	    				cardData.current_level = cardData.current_level + 1;
-	    				playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData, "player_coin":playerData.player_coin}});
+	    				playerData.player_coin = playerCoin - getCardCoinNeed(cardData.rarity, cardData.current_level);
+	    				cardData.current_number = cardData.current_number - getCardNumberNeed(cardData.rarity, cardData.current_level);
+	    				playerData.current_exp += getExpWhenUpgradeCard(cardData.rarity, cardData.current_level);
+						var levelInfo = getPlayerLevelInfoByExp(playerData.current_exp);
+	    				playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData, "player_coin":playerData.player_coin, "current_exp":playerData.current_exp, "current_level":levelInfo}});
 	    				response = {
 	    					"result":true,
 	    					"message":"Upgrade success!",
@@ -116,7 +118,8 @@ if (data.upgrade_card && data.card_id !== undefined) {
 									"next_number" : getCardNumberNeed(cardData.rarity, cardData.current_level + 1),
 									"coin_need" : getCardCoinNeed(cardData.rarity, cardData.current_level + 1)
 				    			},
-	    					"player_coin":playerData.player_coin
+	    					"player_coin":playerData.player_coin,
+	    					"level_info": levelInfo
 	    				}
 	    		}
     		} else {
