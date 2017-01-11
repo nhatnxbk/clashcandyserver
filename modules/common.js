@@ -338,6 +338,63 @@ function addChestToPlayer(playerID, chestData) {
 	return message;
 }
 
+function addChestToPlayerAfterBattle(playerData) {
+	var chestDataMaster = getChestDataMasterByProbability();
+	var chestData = getChestData(chestDataMaster);
+	var result;
+	if (!playerData.chest_data) playerData.chest_data = {};
+	if (!playerData.chest_data.chest1) {
+		chestData.chest_id = 1;
+		playerData.chest_data.chest1 = chestData;
+		result = {
+			"result"     : true,
+			"message"    : "Add chest to chest slot 1",
+			"chest_id"   : 1,
+			"type" 		 : chestData.type,
+			"chest_data" : chestData
+		}
+	} else if (!playerData.chest_data.chest2) {
+		chestData.chest_id = 2;
+		playerData.chest_data.chest2 = chestData;
+		result = {
+			"result"     : true,
+			"message"    : "Add chest to chest slot 2",
+			"chest_id"   : 2,
+			"type" 		 : chestData.type,
+			"chest_data" : chestData
+		}
+	} else if (!playerData.chest_data.chest3) {
+		chestData.chest_id = 3;
+		playerData.chest_data.chest3 = chestData;
+		result = {
+			"result"     : true,
+			"message"    : "Add chest to chest slot 3",
+			"chest_id"   : 3,
+			"type" 		 : chestData.type,
+			"chest_data" : chestData
+		}
+	} else if (!playerData.chest_data.chest4) {
+		chestData.chest_id = 4;
+		playerData.chest_data.chest4 = chestData;
+		result = {
+			"result"     : true,
+			"message"    : "Add chest to chest slot 4",
+			"chest_id"   : 4,
+			"type" 		 : chestData.type,
+			"chest_data" : chestData
+		}
+	} else {
+		result = {
+			"result"     : false,
+			"message"    : "All chest is full!",
+		}
+	}
+	return {
+		"data": result,
+		"player_data": playerData
+	};
+}
+
 function getCoinNeedToOpenChest(timeRemain) {
 	var coin = Math.ceil(server_config.coin_need_open_chest_per_seconds * timeRemain);
 	return coin;

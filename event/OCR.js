@@ -164,6 +164,9 @@ if(data.online_match_end ){
 	var online_match_data =onlineMatchList.findOne({"playerID":playerID});
 	var bonus_coin = 0;
 	var bonus_exp = 0;
+	var chestReceived = {
+		"result" : false
+	};
 	if(data.game_type != "friend"){
 		if(online_match_data !== null && !online_match_data.is_finish){
 			if(isWin || isDraw){
@@ -175,6 +178,12 @@ if(data.online_match_end ){
 					currentPlayerData.online_win = currentPlayerData.online_win ? (currentPlayerData.online_win+1) : 1;
 					bonus_coin = getCoinBattleWin(playerID);
 					bonus_exp  = getExpBattleWin(playerID);
+					// add chest to player
+					var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
+					if (playerDataAfterReceiveChest.data.result) {
+						currentPlayerData = playerDataAfterReceiveChest.player_data;
+						chestReceived = playerDataAfterReceiveChest.data;
+					}
 				}else if(isDraw){
 					bonus = 0;
 					bonus_exp  = getExpBattleLose(playerID);
@@ -184,7 +193,7 @@ if(data.online_match_end ){
 				if(currentPlayerData.trophies > currentPlayerData.highest_trophy){
 					currentPlayerData.highest_trophy = currentPlayerData.trophies;
 				}
-				playerDataList.update({"playerID": playerID}, {"$set": currentPlayerData}, true,false);
+				// playerDataList.update({"playerID": playerID}, {"$set": currentPlayerData}, true,false);
 			}else{
 				currentPlayerData.online_lose = currentPlayerData.online_lose ? (currentPlayerData.online_lose+1) : 0;
 				bonus = -get_bonus_trophies_lost(online_match_data.my_trophy,online_match_data.opponent_trophy);
@@ -200,12 +209,11 @@ if(data.online_match_end ){
 			bonus = 0;
 		}
 		//update coin and exp
-		var playerCoin = currentPlayerData.player_coin ? currentPlayerData.player_coin : 0;
-		playerCoin += bonus_coin;
-		var playerExp = currentPlayerData.current_exp ? currentPlayerData.current_exp : 0;
-		playerExp += bonus_exp;
-		var levelInfo = getPlayerLevelInfoByExp(playerExp);
-		playerDataList.update({"playerID":playerID},{"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level}}, true, false);
+		currentPlayerData.player_coin = currentPlayerData.player_coin ? currentPlayerData.player_coin + bonus_coin : bonus_coin;
+		currentPlayerData.current_exp = currentPlayerData.current_exp ? currentPlayerData.current_exp + bonus_exp : bonus_exp;
+		var levelInfo = getPlayerLevelInfoByExp(currentPlayerData.current_exp);
+		currentPlayerData.level_info = levelInfo;
+		playerDataList.update({"playerID":playerID},{"$set":currentPlayerData}, true, false);
 
 		var save_data = {"playerID":playerID,"my_score":my_score,"op_id":op_id,"op_score":op_score,"draw":isDraw,"win":isWin,"data":online_match_data};
 		Spark.getLog().debug(save_data);
@@ -218,7 +226,8 @@ if(data.online_match_end ){
 		});
 		Spark.setScriptData("data", {"bonus" : bonus,"trophies": currentPlayerData.trophies,"online_win":currentPlayerData.online_win,
 			"online_match_start":currentPlayerData.online_match_start,"highest_trophy":currentPlayerData.highest_trophy,
-			"rank_before":online_match_data.rank_before, "rank_after": online_match_data.rank_after, "bonus_coin":bonus_coin, "level_info":levelInfo});
+			"rank_before":online_match_data.rank_before, "rank_after": online_match_data.rank_after, "bonus_coin":bonus_coin,
+			"level_info":levelInfo, "chest_data": chestReceived});
 	}else{
 		remove_room();
 	}

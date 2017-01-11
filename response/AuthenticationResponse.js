@@ -61,6 +61,7 @@ if(timeDelta < TIME_FB_INVITE){
 var levelInfo = getPlayerLevelInfo(playerID);
 if (levelInfo) {
   currentPlayer.current_level = levelInfo.level;
+  currentPlayer.level_info = levelInfo;
 }
 var response = Spark.sendRequest({"@class":".AccountDetailsRequest"});
 currentPlayer.location =  response.location;
@@ -84,11 +85,6 @@ delete currentPlayer.rto_2;
 delete currentPlayer.rto_3;
 delete currentPlayer.rto_4;
 delete currentPlayer.rto_5;
-
-//player level info
-if (levelInfo) {
-  currentPlayer.level_info = levelInfo;
-}
 
 //store data
 var storeData = getStoreInfo(playerID);
