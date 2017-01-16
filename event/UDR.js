@@ -27,6 +27,25 @@ if (data.one_signal_player_id) {
 	Spark.setScriptData("data", response);
 }
 
+//change user name
+if (data.change_user_name) {
+	var response;
+	var playerID = data.player_id ? data.player_id : playerID;
+	if (data.userName && data.userName !== "") {
+		playerCollection.update({"playerID":playerID},{$set:{"userName":data.userName}}, true, false);
+		response = {
+			"result": true,
+			"message": "Change name success!"
+		}
+	} else {
+		response = {
+			"result": false,
+			"message": "User name must be not null"
+		}
+	}
+	Spark.setScriptData("data", response);
+}
+
 //get player card data
 if (data.get_card_data) {
     var cardData = playerData.card_data ? playerData.card_data : [];
