@@ -33,6 +33,10 @@ if (data.change_user_name) {
 	var playerID = data.player_id ? data.player_id : playerID;
 	if (data.userName && data.userName !== "") {
 		playerCollection.update({"playerID":playerID},{$set:{"userName":data.userName}}, true, false);
+		Spark.sendRequest({
+			"@class" : ".ChangeUserDetailsRequest",
+			"displayName" : data.userName
+		});
 		response = {
 			"result": true,
 			"message": "Change name success!"
@@ -162,7 +166,7 @@ if (data.buy_item) {
 	var response;
 	if (packItem) {
 		if (packItem.item_type == server_config.PACK_ITEM_TYPE.coin) {
-			playerCoin += packItem.number;
+			playerCoin += parseInt(packItem.number);
 			playerExp ++;
 			var levelInfo = getPlayerLevelInfoByExp(playerExp);
 			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level}}, true, false);
@@ -179,7 +183,7 @@ if (data.buy_item) {
 					"message" : "Can't enough coin to buy"
 				};
 			} else {
-				playerCoin -= packItem.cost;
+				playerCoin -= parseInt(packItem.cost);
 				playerExp ++;
 				var playerLife = playerData.player_life ? playerData.player_life : 0;
 				playerLife += packItem.number;
@@ -200,7 +204,7 @@ if (data.buy_item) {
 					"message" : "Can't enough coin to buy"
 				};
 			} else {
-				playerCoin -= packItem.cost;
+				playerCoin -= parseInt(packItem.cost);
 				var playerBomb = playerData.player_bomb ? playerData.player_bomb : 0;
 				playerBomb += packItem.number;
 				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "player_bomb":playerBomb}}, true, false);
