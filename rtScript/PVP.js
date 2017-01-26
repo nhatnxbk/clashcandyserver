@@ -82,3 +82,24 @@ RTSession.onPacket(3, function(packet){
     
     return false;
 });
+
+
+var num_end_score = 0;
+var end_score = {};
+//Nhan goi tin ket thuc van choi va gui thong tin ve cho nguoi choi
+RTSession.onPacket(4, function(packet){
+    var score = packet.getData().getNumber(1);
+    RTSession.getLogger().debug("Nhan duoc goi tin ket thuc van choi score " + score +" player " + packet.getSender().getPeerId() + " date "  +  Date.now());
+    num_end_score++;
+    end_score[packet.getSender().getPeerId() + ""] = score;
+    if(num_end_score == 2){
+        var data = RTSession.newData();
+        for(var key in end_score){
+            data.setNumber(parseInt(key), end_score[key]);    
+        }
+        RTSession.getLogger().debug("Gui goi tin ket thuc tran dau " + " date "  +  Date.now());
+        RTSession.newPacket().setReliable(true).setOpCode(4).setSender(packet.getSender().getPeerId()).setData(data).send();
+    }else{
+        return false;
+    }
+});

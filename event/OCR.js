@@ -157,6 +157,7 @@ if(data.online_match_end ){
 	var isDraw = data.isDraw;
 	var currentPlayerData = playerDataList.findOne({"playerID": playerID});
 	var bonus = 0;
+	var opponent_bonus = 0;
 	var server = Spark.runtimeCollection("PhotonServer");
 	server.remove({"playerID":playerID});
 	server.remove({"playerID":op_id});
@@ -173,6 +174,7 @@ if(data.online_match_end ){
 				var currentPlayer = Spark.getPlayer();
 				var bonus_trophies = get_bonus_trophies_win(online_match_data.my_trophy,online_match_data.opponent_trophy);
 				bonus = bonus_trophies;
+				opponent_bonus = -get_bonus_trophies_lost(online_match_data.opponent_trophy,online_match_data.my_trophy);
 				if(!currentPlayerData.trophies) currentPlayerData.trophies = 0;
 				if(isWin){
 					currentPlayerData.online_win = currentPlayerData.online_win ? (currentPlayerData.online_win+1) : 1;
@@ -186,6 +188,7 @@ if(data.online_match_end ){
 					}
 				}else if(isDraw){
 					bonus = 0;
+					opponent_bonus = 0;
 					bonus_exp  = getExpBattleLose(playerID);
 				}
 				currentPlayerData.trophies = (online_match_data.my_trophy + bonus);
@@ -197,6 +200,7 @@ if(data.online_match_end ){
 			}else{
 				currentPlayerData.online_lose = currentPlayerData.online_lose ? (currentPlayerData.online_lose+1) : 0;
 				bonus = -get_bonus_trophies_lost(online_match_data.my_trophy,online_match_data.opponent_trophy);
+				opponent_bonus = get_bonus_trophies_win(online_match_data.opponent_trophy,online_match_data.my_trophy);
 				bonus_exp  = getExpBattleLose(playerID);
 			}
 
@@ -207,6 +211,7 @@ if(data.online_match_end ){
 			onlineMatchList.update({"playerID": playerID}, {"$set": online_match_data}, true,false);
 		}else{
 			bonus = 0;
+			opponent_bonus = 0;
 		}
 		//update coin and exp
 		currentPlayerData.player_coin = currentPlayerData.player_coin ? currentPlayerData.player_coin + bonus_coin : bonus_coin;
@@ -224,7 +229,7 @@ if(data.online_match_end ){
 			"COUNTRY": currentPlayerData && currentPlayerData.location && currentPlayerData.location.country ? currentPlayerData.location.country : "VN",
 			"CITY": ""
 		});
-		Spark.setScriptData("data", {"bonus" : bonus,"trophies": currentPlayerData.trophies,"online_win":currentPlayerData.online_win,
+		Spark.setScriptData("data", {"bonus" : bonus,"opponent_bonus" : opponent_bonus,"trophies": currentPlayerData.trophies,"opponent_trophies": online_match_data.opponent_trophy + opponent_bonus,"online_win":currentPlayerData.online_win,
 			"online_match_start":currentPlayerData.online_match_start,"highest_trophy":currentPlayerData.highest_trophy,
 			"rank_before":online_match_data.rank_before, "rank_after": online_match_data.rank_after, "bonus_coin":bonus_coin,
 			"level_info":levelInfo, "chest_data": chestReceived});
