@@ -53,23 +53,30 @@ RTSession.onPacket(2, function(packet){
 var eatId = 1;
 var eatStatus = {};
 var lastPlayerEatPeerId;
+var data_holder;
 //Xu ly goi tin an va tranh chap
 RTSession.onPacket(3, function(packet){
     var client_eat_id = packet.getData().getNumber(1);
-    RTSession.getLogger().debug("Nhan duoc goi tin an eat id client " + client_eat_id + " server " + eatId +" "  +  Date.now());
-    if(client_eat_id == eatId){
-        if(!eatStatus[eatId+""]){// Chua co ai an id nay
-            eatStatus[eatId+""] = 1;
+    RTSession.getLogger().debug("Nhan duoc goi tin an eat id client " + client_eat_id + " server " + eatId +" data " + JSON.stringify(packet.getData()) + " time "  +  Date.now());
+    if(client_eat_id == eatId || client_eat_id == eatId -1){
+        if(!eatStatus[client_eat_id+""]){// Chua co ai an id nay
+            eatStatus[client_eat_id+""] = 1;
             lastPlayerEatPeerId = packet.getSender().getPeerId();
-            var data = RTSession.newData();
-            data.setNumber(1, client_eat_id);
+            var data_client = packet.getData();
+            data_holder = RTSession.newData();
+            data_holder.setNumber(1, client_eat_id);
+            data_holder.setNumber(2, data_client.getNumber(2));
+            data_holder.setNumber(3, data_client.getNumber(3));
+            data_holder.setNumber(4, data_client.getNumber(4));
+            data_holder.setNumber(5, data_client.getNumber(5));
+            data_holder.setNumber(6, data_client.getNumber(6));
+            data_holder.setNumber(7, data_client.getNumber(7));
             eatId = eatId + 1;
-            RTSession.newPacket().setReliable(true).setOpCode(3).setSender(packet.getSender().getPeerId()).setTargetPeers(packet.getSender().getPeerId()).setData(data).send();
-            RTSession.newPacket().setReliable(false).setOpCode(3).setSender(packet.getSender().getPeerId()).setTargetPeers(packet.getSender().getPeerId()).setData(data).send();
-            return packet;
+            RTSession.newPacket().setReliable(true).setOpCode(3).setSender(lastPlayerEatPeerId).setData(data_holder).send();
+            return false;
         }else{ // Da duoc an id nay(goi tin thu 2 hoac la doi thu)
-            if(lastPlayerEatPeerId != packet.getSender().getPeerId() && eatStatus[eatId+""] == 1){//Co nguoi choi thu 2 an cung luc
-                eatStatus[eatId+""] =2;
+            if(lastPlayerEatPeerId != packet.getSender().getPeerId() && eatStatus[client_eat_id+""] == 1){//Co nguoi choi thu 2 an cung luc
+                eatStatus[client_eat_id+""] =2;
                 // var data = RTSession.newData();
                 // data.setNumber(1, eatId);
                 // RTSession.newPacket().setReliable(true).setOpCode(4).setSender(packet.getSender().getPeerId()).setTargetPeers(packet.getSender().getPeerId()).setData(data).send();
