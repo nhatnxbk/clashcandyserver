@@ -470,18 +470,22 @@ if (data.claim_chest) {
 		var chest = getPlayerChest(chest_id);
 		if (chest) {
 			var chestStatus = getChestStatus(chest);
-			if (chestStatus.status == server_config.chest_status.locked.status) {
+			if (chestStatus.status == server_config.chest_status.locked.status && !useCoin) {
 				response = {
 					"result" : false,
 					"message" : "This chest is locked!"
 				}
-			} else if (chestStatus.status == server_config.chest_status.opening.status) {
+			} else if (chestStatus.status == server_config.chest_status.opened.status) {
+				var listCardResult = _claimChest(chest);
+				response = {
+					"result" : true,
+					"message" : "Claim chest success",
+					"list_card":listCardResult
+				}
+			} else {
 				if (useCoin) {
 					if (!playerData.player_coin) playerData.player_coin = 0;
-					var timeOut = chest.time_out;
-					var timeOpen = chest.time_open;
-					var timeNow2 = timeNow;
-					var timeRemain = (chest.time_out - (timeNow - chest.time_open)) / 1000;
+					var timeRemain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000 : chest.time_out / 1000;
 					var coinNeed = getCoinNeedToOpenChest(Math.ceil(timeRemain));
 					if (playerData.player_coin < coinNeed) {
 						response = {
@@ -494,7 +498,8 @@ if (data.claim_chest) {
 						response = {
 							"result" : true,
 							"message": "Claim chest by coin success",
-							"list_card": listCardResult
+							"list_card": listCardResult,
+							"player_coin": playerData.player_coin
 						}
 					}
 				} else {
@@ -502,13 +507,6 @@ if (data.claim_chest) {
 						"result" : false,
 						"message" : "This chest is opening, please wait!"
 					}
-				}
-			} else if (chestStatus.status == server_config.chest_status.opened.status) {
-				var listCardResult = _claimChest(chest);
-				response = {
-					"result" : true,
-					"message" : "Claim chest success",
-					"list_card":listCardResult
 				}
 			}
 		} else {
@@ -545,6 +543,32 @@ if (data.get_chest_data) {
 		"result": true,
 		"message": "Get chest data success!",
 		"chest_data" : chestData
+	}
+	Spark.setScriptData("data", response);
+}
+
+//get coin need to open chest now
+if (data.get_chest_data_to_open_now) {
+	var chestID = data.chest_id ? data.chest_id : 0;
+	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
+	var chestData = player ? player.chest_data : undefined;
+	var response = {
+		"result": false,
+		"message": "Can not found this chest"
+	}
+	if (chestData) {
+		var chest = chestData["chest"+chestID];
+		if (chest) {
+			var timeRemain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
+		          : chest.time_out / 1000;
+		    var coinNeed = getCoinNeedToOpenChest(timeRemain);
+		    response = {
+		    	"result": true,
+		    	"message": "Get coin need to open chest success",
+		    	"coin_need": coinNeed,
+		    	"time_remain": timeRemain
+		    }
+		}
 	}
 	Spark.setScriptData("data", response);
 }
@@ -821,7 +845,7 @@ function _claimChest(chest) {
 		if (cardPlayer) {
 			cardPlayer.current_number += card.current_number;
 			playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
-			{"$set":{"card_data.$.current_number": cardPlayer.current_number, "player_coin":playerData.player_coin, "chest_data":chestData}}, true, false);
+			{"$set":{"card_data.$.current_number": cardPlayer.current_number, "chest_data":chestData}}, true, false);
 		} else {
 			cardPlayer = cardMaster.findOne({"card_id":card.card_id});
 			cardPlayer.current_level = 1;
@@ -829,10 +853,11 @@ function _claimChest(chest) {
 			cardPlayer = getCardFull(cardPlayer);
 			var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 			listPlayerCard.push(cardPlayer);
-			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard, "player_coin" : playerData.player_coin},"$unset":{"chest_data":{chestKey:""}}}, true, false);
+			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard},"$unset":{"chest_data":{chestKey:""}}}, true, false);
 		}
 		cardPlayer.added_number = card.current_number;
 		listCardResult.push(cardPlayer);
 	});
+	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin}}, true, false);
 	return listCardResult;
 }
