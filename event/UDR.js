@@ -59,7 +59,7 @@ if (data.get_card_data) {
 //add coin
 if (data.add_coin && data.number !== undefined) {
 	var response;
-	var playerCoin = playerData.player_coin ? playerData.player_coin : 0;
+	var playerCoin = playerData.player_coin ? parseInt(playerData.player_coin) : 0;
 	playerData.player_coin = playerCoin + data.number;
 	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin}});
 	response = {
@@ -103,7 +103,7 @@ if (data.upgrade_card && data.card_id !== undefined) {
     var card_upgrade_id = data.card_id;
     var playerCardData = playerData.card_data;
     // var playerCardDataArr = playerCardData ? JSON.parse(playerCardData) : [];
-    var playerCoin = playerData.player_coin;
+    var playerCoin = parseInt(playerData.player_coin);
     if (!playerData.current_exp) playerData.current_exp = 0;
     var response;
     for (var i = 0; i < playerCardData.length; i++) {
@@ -161,7 +161,7 @@ if (data.upgrade_card && data.card_id !== undefined) {
 if (data.buy_item) {
 	var pack_id = data.pack_id;
 	var packItem = storeMaster.findOne({"pack_id":pack_id});
-	var playerCoin = playerData.player_coin ? playerData.player_coin : 0;
+	var playerCoin = playerData.player_coin ? parseInt(playerData.player_coin) : 0;
 	var playerExp = playerData.current_exp ? playerData.current_exp : 0;
 	var response;
 	if (packItem) {
@@ -229,7 +229,7 @@ if (data.buy_item) {
 if (data.buy_card) {
 	var card_id = data.card_id;
 	var buy_all = data.buy_all ? data.buy_all : 0;
-	var playerCoin = playerData.player_coin ? playerData.player_coin : 0;
+	var playerCoin = playerData.player_coin ? parseInt(playerData.player_coin) : 0;
 	// dung hoac ko
 	var playerExp = playerData.current_exp ? playerData.current_exp : 0;
 	var cardStore = getCardStore(playerID, card_id);
