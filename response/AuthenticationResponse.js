@@ -37,7 +37,7 @@ if (!currentPlayer.player_coin) {
 }
 
 //======== Caculate time can request and receive energy or not=========//
-var timeNow = Date.now();
+var timeNow = getTimeNow();
 Spark.getLog().debug("Now : " + timeNow);
 var time_fb_invite = 0;
 if( "time_fb_invite" in currentPlayer){
@@ -99,8 +99,11 @@ currentPlayer.card_data = getListCardFull(currentPlayer.card_data);
 var chestData = currentPlayer.chest_data;
 if (chestData) {
   for (var i = 1; i < 5; i++) {
-    if (chestData["chest"+i]) {
-      chestData["chest"+i].status = getChestStatus(chestData["chest"+i]);
+    var chest = chestData["chest"+i];
+    if (chest) {
+      chest.status = getChestStatus(chest);
+      chest.time_remain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
+          : chest.time_out / 1000;
     }
   }
 }

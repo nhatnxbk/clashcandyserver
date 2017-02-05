@@ -533,9 +533,12 @@ if (data.get_chest_data) {
 	var chestData = player ? player.chest_data : undefined;
 	if (chestData) {
 		for (var i = 1; i < 5; i++) {
-			if (chestData["chest"+i]) {
-				chestData["chest"+i].status = getChestStatus(chestData["chest"+i]);
-			}
+			var chest = chestData["chest"+i];
+		    if (chest) {
+		      chest.status = getChestStatus(chest);
+		      chest.time_remain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
+		          : chest.time_out / 1000;
+		    }
 		}
 	}
 	response = {
