@@ -342,6 +342,7 @@ function addChestToPlayerAfterBattle(playerData) {
 	var chestDataMaster = getChestDataMasterByProbability();
 	var chestData = getChestData(chestDataMaster);
 	chestData.status = server_config.chest_status.locked;
+	chestData.time_remain = chestData.time_out / 1000;
 	var result;
 	if (!playerData.chest_data) playerData.chest_data = {};
 	if (!playerData.chest_data.chest1) {
