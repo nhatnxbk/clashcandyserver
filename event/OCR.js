@@ -166,7 +166,8 @@ if(data.online_match_end ){
 	var bonus_coin = 0;
 	var bonus_exp = 0;
 	var chestReceived = {
-		"result" : false
+		"result" : false,
+		"full_chest": false
 	};
 	if(data.game_type != "friend"){
 		if(online_match_data !== null && !online_match_data.is_finish){

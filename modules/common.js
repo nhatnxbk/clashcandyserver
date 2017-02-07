@@ -387,8 +387,9 @@ function addChestToPlayerAfterBattle(playerData) {
 		}
 	} else {
 		result = {
-			"result"     : false,
-			"message"    : "All chest is full!",
+			"result": true,
+			"message" : "Your chest slot is full",
+			"full_chest": true
 		}
 	}
 	return {
