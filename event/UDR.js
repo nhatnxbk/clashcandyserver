@@ -547,6 +547,41 @@ if (data.get_chest_data) {
 	Spark.setScriptData("data", response);
 }
 
+//get store data
+if (data.get_store_data) {
+	var response;
+	var player_id = data.player_id ? data.player_id : playerID;
+	var storeData = getStoreInfo(player_id);
+	response = {
+		"result": true,
+		"store": storeData
+	}
+	Spark.setScriptData("data", response);
+}
+
+// get data for scene main (store_data, chest_data)
+if (data.get_data_for_main) {
+	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
+	var storeData = getStoreInfo(data.player_id ? data.player_id : playerID);
+	var chestData = player ? player.chest_data : undefined;
+	if (chestData) {
+		for (var i = 1; i < 5; i++) {
+			var chest = chestData["chest"+i];
+		    if (chest) {
+		      chest.status = getChestStatus(chest);
+		      chest.time_remain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
+		          : chest.time_out / 1000;
+		    }
+		}
+	}
+	var response = {
+		"store": storeData,
+		"chest_data": chestData,
+		"result": true
+	}
+	Spark.setScriptData("data", response);
+}
+
 //get coin need to open chest now
 if (data.get_chest_data_to_open_now) {
 	var chestID = data.chest_id ? data.chest_id : 0;

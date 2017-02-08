@@ -87,27 +87,27 @@ delete currentPlayer.rto_4;
 delete currentPlayer.rto_5;
 
 //store data
-var storeData = getStoreInfo(playerID);
-if (storeData) {
-  currentPlayer.store = storeData;
-}
+// var storeData = getStoreInfo(playerID);
+// if (storeData) {
+//   currentPlayer.store = storeData;
+// }
 
 //card data
 currentPlayer.card_data = getListCardFull(currentPlayer.card_data);
 
 //chest data
-var chestData = currentPlayer.chest_data;
-if (chestData) {
-  for (var i = 1; i < 5; i++) {
-    var chest = chestData["chest"+i];
-    if (chest) {
-      chest.status = getChestStatus(chest);
-      chest.time_remain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
-          : chest.time_out / 1000;
-    }
-  }
-}
-currentPlayer.chest_data = chestData;
+// var chestData = currentPlayer.chest_data;
+// if (chestData) {
+//   for (var i = 1; i < 5; i++) {
+//     var chest = chestData["chest"+i];
+//     if (chest) {
+//       chest.status = getChestStatus(chest);
+//       chest.time_remain = chest.time_open ? (chest.time_out - (timeNow - chest.time_open)) / 1000
+//           : chest.time_out / 1000;
+//     }
+//   }
+// }
+// currentPlayer.chest_data = chestData;
 
 // check admin
 var is_admin = isAdmin();
