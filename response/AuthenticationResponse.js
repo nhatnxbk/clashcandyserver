@@ -107,7 +107,7 @@ currentPlayer.card_data = getListCardFull(currentPlayer.card_data);
 //     }
 //   }
 // }
-// currentPlayer.chest_data = chestData;
+if (!currentPlayer.chest_data) currentPlayer.chest_data = {};
 
 // check admin
 var is_admin = isAdmin();
