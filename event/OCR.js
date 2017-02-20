@@ -65,6 +65,9 @@ if(data.get_server){
 
 if(data.get_bot_player){
 	var opponentPlayer = get_bot_player_data();
+	opponentPlayer.level = BOT_LEVEL[parseInt(Math.random()* BOT_LEVEL.length)];
+	opponentPlayer.seed = parseInt(Math.random() * 100000);
+	opponentPlayer.level_data = get_level_data(101);
 	Spark.setScriptData("botData",opponentPlayer);
 }
 
@@ -182,11 +185,11 @@ if(data.online_match_end ){
 					bonus_coin = getCoinBattleWin(playerID);
 					bonus_exp  = getExpBattleWin(playerID);
 					// add chest to player
-					var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
-					if (playerDataAfterReceiveChest.data.result) {
-						currentPlayerData = playerDataAfterReceiveChest.player_data;
-						chestReceived = playerDataAfterReceiveChest.data;
-					}
+				// 	var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
+				// 	if (playerDataAfterReceiveChest.data.result) {
+				// 		currentPlayerData = playerDataAfterReceiveChest.player_data;
+				// 		chestReceived = playerDataAfterReceiveChest.data;
+				// 	}
 				}else if(isDraw){
 					bonus = 0;
 					opponent_bonus = 0;
@@ -204,7 +207,12 @@ if(data.online_match_end ){
 				opponent_bonus = get_bonus_trophies_win(online_match_data.opponent_trophy,online_match_data.my_trophy);
 				bonus_exp  = getExpBattleLose(playerID);
 			}
-
+            
+            var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
+			if (playerDataAfterReceiveChest.data.result) {
+				currentPlayerData = playerDataAfterReceiveChest.player_data;
+				chestReceived = playerDataAfterReceiveChest.data;
+			}
 			online_match_data.is_finish = true;
 			//rank of myPlayer after match_end
 			myRank = get_current_rank_with_friends();
@@ -285,6 +293,10 @@ if (data.get_bonus_trophies) {
 	Spark.setScriptData("data", {"bonus_win":bonus_win, "bonus_lost": bonus_lost});
 }
 
+if(data.get_level_data){
+    Spark.setScriptData("data", get_level_data(data.level));
+}
+
 function remove_room () {
 	var server = Spark.runtimeCollection("FriendRoom");
 	server.remove({"playerID":playerID});
@@ -310,6 +322,19 @@ function get_current_rank_with_friends() {
 	} else {
 		return 1;
 	}
+}
+
+function get_level_data(level){
+    if(level <= CLIENT_LEVEL_MAX){
+        return null;
+    }
+    var levelMaster = Spark.metaCollection("level_match_master");
+    var lvl_data = levelMaster.findOne({level:level});
+    if(!lvl_data) {
+        Spark.getLog().error("Can not find level in db " + level + " time " + new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
+        return get_level_data(25);
+    }
+    return lvl_data;
 }
 
 function get_bot_player_data() {

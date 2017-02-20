@@ -5,7 +5,9 @@ var DEBUG = server_config.DEBUG;
 var TIME_EXPIRE_MATCH = server_config.TIME_EXPIRE_MATCH;
 var TIME_EXPIRE_ROOM = server_config.TIME_EXPIRE_ROOM;
 var TIME_FB_INVITE = server_config.TIME_FB_INVITE;
-var NUM_LEVEL = server_config.NUM_LEVEL;
+var CLIENT_LEVEL_MAX = 100;
+var BOT_LEVEL = [25,28,29];
+var NORMAL_LEVEL = [25,28,29,30,31,32,33,34,35,36,37,38];
 var BONUS_TROPHIES = server_config.BONUS_TROPHIES;
 var BONUS_BY_TROPHIES_OFFSET = server_config.BONUS_BY_TROPHIES_OFFSET;
 var BONUS_TROPHIES_OFFSET    = server_config.BONUS_TROPHIES_OFFSET;
@@ -26,39 +28,6 @@ var OFFSET_TIME = server_config.DEBUG_OFFSET_TIME;
 var LIST_ADMIN = server_config.LIST_ADMIN;
 var NUM_NOTICE = server_config.NUM_NOTICE;
 var NUM_NOTICE_ADMIN = server_config.NUM_NOTICE_ADMIN;
-//easy
-var rt_1_e = [3, 5, 6, 6, 7, 8, 9, 8, 9, 9, 8, 9, 8, 8, 8, 7];//con 1 cap
-var rt_2_e = [3, 4, 4, 5, 6, 7, 8, 7, 9, 8, 7, 8, 8, 7, 6, 6];// con 2 cap
-var rt_3_e = [2, 3, 3, 3, 4, 5, 4, 6, 4, 5, 5, 6, 5, 4, 4, 3];// con 3 cap
-var rt_4_e = [2, 3, 3, 3, 4, 3, 5, 4, 5, 3, 4, 4, 3, 4, 3, 3];// con 4 cap
-var rt_5_e = [2, 3, 2, 3, 2, 3, 2, 3, 4, 3, 4, 3, 3, 3, 3, 2];// con >= 5 cap
-var rto_1_e = [0.8, 1.7, 1.5, 2.4, 2.5, 3.0, 3.1, 3.0, 3.2, 3.1, 3.2, 3.3, 3.3, 3.5, 3.5, 3.3];
-var rto_2_e = [0.8, 2.0, 2.0, 2.1, 2.2, 2.3, 2.5, 2.8, 2.8, 2.5, 2.5, 3.0, 3.0, 3.0, 3.2, 3.2];
-var rto_3_e = [1.0, 1.8, 2.0, 2.1, 2.2, 2.3, 2.5, 2.7, 2.7 ,2.7, 2.5, 2.5, 2.5, 2.5, 2,6, 2.9];
-var rto_4_e = [1.2, 1.2, 2.1, 2.2, 2.3, 2.3, 2.4, 2.3, 2.3 ,2.4 ,2.4, 2.4, 2.4 ,2.5, 2.3, 2.4];
-var rto_5_e = [1.5, 1.7, 1.8, 1.8, 1.8, 1.8, 1.8, 2.0, 2.2, 2.1, 2.1, 2.2, 2.2, 2.1, 2.2, 2.2];
-//normal
-var rt_1_n = [3, 5, 5, 6, 7, 8, 9, 8, 9, 9, 8, 8, 8, 8, 8, 6];//con 1 cap
-var rt_2_n = [3, 4, 4, 5, 6, 7, 8, 7, 8, 8, 6, 7, 7, 7, 6, 5];// con 2 cap
-var rt_3_n = [2, 3, 3, 3, 4, 5, 4, 5, 4, 5, 5, 4, 5, 4, 4, 3];// con 3 cap
-var rt_4_n = [2, 3, 3, 3, 4, 3, 4, 4, 4, 3, 4, 4, 3, 4, 3, 3];// con 4 cap
-var rt_5_n = [2, 2, 2, 3, 2, 3, 2, 3, 3, 3, 2, 3, 2, 3, 3, 2];// con >= 5 cap
-var rto_1_n = [0.8, 1.7, 1.5, 2.4, 2.5, 3.0, 3.1, 3.0, 3.2, 3.1, 3.2, 3.3, 3.3, 3.5, 3.5, 3.3];
-var rto_2_n = [0.8, 2.0, 2.0, 2.1, 2.2, 2.3, 2.5, 2.8, 2.8, 2.5, 2.5, 3.0, 3.0, 3.0, 3.2, 3.2];
-var rto_3_n = [1.0, 1.8, 2.0, 2.1, 2.2, 2.3, 2.5, 2.7, 2.7 ,2.7, 2.5, 2.5, 2.5, 2.5, 2,6, 2.9];
-var rto_4_n = [1.2, 1.2, 2.0, 2.0, 2.1, 2.2, 2.3, 2.3, 2.3 ,2.3 ,2.4, 2.4, 2.4 ,2.5, 2.3, 2.4];
-var rto_5_n = [1.5, 1.7, 1.7, 1.7, 1.8, 1.8, 1.8, 2.0, 2.0, 2.1, 2.1, 2.2, 2.1, 2.1, 2.2, 2.2];
-//hard
-var rt_1_h = [3, 5, 5, 6, 7, 6, 7, 7, 6, 7, 6, 7, 6, 7, 6, 6];//con 1 cap
-var rt_2_h = [3, 4, 4, 5, 6, 6, 7, 6, 7, 7, 6, 6, 7, 7, 6, 5];// con 2 cap
-var rt_3_h = [2, 3, 3, 3, 4, 5, 4, 5, 4, 5, 5, 4, 5, 4, 4, 3];// con 3 cap
-var rt_4_h = [2, 3, 3, 3, 4, 3, 4, 3, 4, 3, 4, 4, 3, 4, 3, 3];// con 4 cap
-var rt_5_h = [2, 2, 2, 3, 2, 3, 2, 3, 3, 3, 2, 3, 2, 3, 3, 2];// con >= 5 cap
-var rto_1_h = [0.8, 1.7, 1.5, 2.4, 2.5, 3.0, 3.1, 3.0, 3.2, 3.1, 3.2, 3.3, 3.3, 3.5, 3.5, 3.3];
-var rto_2_h = [0.8, 2.0, 2.0, 2.1, 2.2, 2.3, 2.5, 2.8, 2.8, 2.5, 2.5, 3.0, 3.0, 3.0, 3.2, 3.2];
-var rto_3_h = [1.0, 1.8, 2.0, 2.1, 2.2, 2.3, 2.5, 2.7, 2.7 ,2.7, 2.5, 2.5, 2.5, 2.5, 2,6, 2.9];
-var rto_4_h = [1.2, 1.2, 2.0, 2.0, 2.1, 2.2, 2.3, 2.3, 2.3 ,2.3 ,2.4, 2.4, 2.4 ,2.5, 2.3, 2.4];
-var rto_5_h = [1.5, 1.7, 1.7, 1.7, 1.8, 1.8, 1.8, 2.0, 2.0, 2.1, 2.1, 2.2, 2.1, 2.1, 2.2, 2.2];
 //====card parameter====//
 var card_level_max = server_config.card_level_max;
 var card_score_rarity_common = server_config.card_score_rarity_common;

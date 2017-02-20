@@ -1,6 +1,7 @@
 //=========User Data Request Controller============//
 require("share");
 require("common");
+require("translate_text");
 var userFeedbackData = Spark.runtimeCollection("user_feedback");
 var userNotice = Spark.runtimeCollection("user_notice");
 var playerID = Spark.getPlayer().getPlayerId();
@@ -8,6 +9,55 @@ var playerData = playerCollection.findOne({"playerID":playerID});
 var data = Spark.getData().data;
 if(!data) data = {};
 var timeNow = getTimeNow();
+
+if(data.get_translate_data){
+    var key = data.key;
+    var lang = data.lang;
+    var response = {};
+    switch(key){
+        case "tutorial_game_1":
+            response.text1 = [
+                getTextTranslation("Hello. My name is Ariel. I will be your guide.",lang),
+                getTextTranslation("Welcome to the ocean world. It's not peaceful. We must fight to live.",lang),
+                getTextTranslation("Defeat your enemy to get reward. Now is battle.",lang)
+            ];
+            response.text2 = [
+                getTextTranslation("This is your information: score, name.",lang),
+                getTextTranslation("That is your enemy's information.",lang),
+                getTextTranslation("And here is your target. When you reach target, game ends.",lang),
+                getTextTranslation("Who have higher score will win.",lang),
+                getTextTranslation("In the bottom is timer. If time runs out, game will end.",lang),
+                getTextTranslation("Next is your deck. Each card has energy. When mana is enough, card will be active.",lang),
+                getTextTranslation("You can only eat the sea creatures that matches the active card. If you eat, that card will disappear.",lang),
+                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+            ];
+            break;
+        case "tutorial_game_two_target":
+            response.text1 = [
+                getTextTranslation("In this game, you and enemy have different target.",lang),
+                getTextTranslation("You must eat your target as soon as possible",lang),
+            ];
+            
+            break;
+         case "tutorial_game_target_ingredient":
+            response.text1 = [
+                getTextTranslation("In this game, you and enemy have different target.",lang),
+                getTextTranslation("You must move your target down to the bottom as soon as possible",lang),
+                getTextTranslation("You can eat enemy's target to reduce enemy's speed.",lang),
+                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+            ];
+            break;
+        case "tutorial_game_chest_first_received":
+            response.text1 = [
+                getTextTranslation("After win one battle, you will be receive one chest", lang),
+                getTextTranslation("There are 5 kind of chest. Touch into your chest to open", lang)
+            ];
+            break;
+        default:
+            break;
+    }
+    Spark.setScriptData("data", response);
+}
 
 //update one signal player id
 if (data.one_signal_player_id) {
@@ -563,7 +613,7 @@ if (data.get_store_data) {
 if (data.get_data_for_main) {
 	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
 	var storeData = getStoreInfo(data.player_id ? data.player_id : playerID);
-	var chestData = player ? player.chest_data : undefined;
+	var chestData = player ? player.chest_data : {};
 	if (chestData) {
 		for (var i = 1; i < 5; i++) {
 			var chest = chestData["chest"+i];
@@ -607,6 +657,10 @@ if (data.get_chest_data_to_open_now) {
 	}
 	Spark.setScriptData("data", response);
 }
+<<<<<<< d77d92a8d467d0943fc935950a39554e10a16417
+=======
+
+>>>>>>> Server xong tutorial va download map online
 //=====================RQ debug======================//
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
@@ -727,6 +781,10 @@ if (data.debug_get_player_chest_status) {
 		}
 	}
 	Spark.setScriptData("data", response);
+}
+
+if(data.debug_gs_disconnect) {
+    Spark.getPlayer().disconnect(true);
 }
 
 if (data.debug_add_card_master) {

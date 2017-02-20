@@ -2,18 +2,29 @@
 //
 // Cloud Code for module, write your code here to customise the GameSparks platform.
 //
-// For details of the GameSparks Cloud Code API see https://portal.gamesparks.net/docs.htm          
+// For details of the GameSparks Cloud Code API see https://portal.gamesparks.net/docs.htm			
 //
 // ====================================================================================================
 var playerCount = 0;
 RTSession.onPlayerConnect(function(player){
     if(++playerCount == 2){
-        RTSession.getLogger().debug("2 player deu join phong " + Date.now());
+        RTSession.getLogger().debug("2 player deu join phong " + new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString());
         var data = RTSession.newData();
         var randomSeed = parseInt(Math.random() * 1000000);
+        var level = NORMAL_LEVEL[parseInt(Math.random()* NORMAL_LEVEL.length)];
         data.setNumber(1, randomSeed);
-        data.setNumber(2, 10);
-        RTSession.newPacket().setReliable(true).setOpCode(100).setData(data).send();
+        data.setNumber(2, parseInt(Math.random() * 99));
+        var request = RTSession.newRequest()
+        .createLogEventRequest()
+        .setEventKey("OCR");
+        request.setdata({"level":level,"get_level_data":true});
+        request.setPlayerId(player.getPlayerId())
+            .send(function(response){
+                RTSession.getLogger().debug("Nhan duoc goi tin lay thong tin level " + JSON.stringify(response));
+                data.setString(3, response.scriptData.data.data);
+                RTSession.newPacket().setReliable(true).setOpCode(100).setData(data).send();
+            });
+        
     }
     var playerPeerId = player.getPeerId(); // gets sender's peerID
     var playerPlayerId = player.getPlayerId(); // gets sender's playerID
@@ -43,7 +54,7 @@ RTSession.onPlayerDisconnect(function(player){
 var startMapCount = 0;
 //Nhan duoc goi tin muon bat dau tran dau tu host
 RTSession.onPacket(2, function(packet){
-    RTSession.getLogger().debug("Bat dau tran dau " + startMapCount+ Date.now());
+    RTSession.getLogger().debug("Bat dau tran dau " + startMapCount+ " time "+ new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
     startMapCount++;
     if(startMapCount == 1) return false;
     RTSession.newPacket().setOpCode(2).send();
@@ -57,7 +68,7 @@ var data_holder;
 //Xu ly goi tin an va tranh chap
 RTSession.onPacket(3, function(packet){
     var client_eat_id = packet.getData().getNumber(1);
-    RTSession.getLogger().debug("Nhan duoc goi tin an eat id client " + client_eat_id + " server " + eatId +" data " + JSON.stringify(packet.getData()) + " time "  +  Date.now());
+    RTSession.getLogger().debug("Nhan duoc goi tin an eat id client " + client_eat_id + " server " + eatId + " time "  +  new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
     if(client_eat_id == eatId || client_eat_id == eatId -1){
         if(!eatStatus[client_eat_id+""]){// Chua co ai an id nay
             eatStatus[client_eat_id+""] = 1;
@@ -84,7 +95,7 @@ RTSession.onPacket(3, function(packet){
             }
         }
     }else{
-        RTSession.getLogger().error("Goi tin den bi sai id "+ Date.now());
+        RTSession.getLogger().error("Goi tin den bi sai id "+ new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
     }
     
     return false;
@@ -96,7 +107,7 @@ var end_score = {};
 //Nhan goi tin ket thuc van choi va gui thong tin ve cho nguoi choi
 RTSession.onPacket(4, function(packet){
     var score = packet.getData().getNumber(1);
-    RTSession.getLogger().debug("Nhan duoc goi tin ket thuc van choi score " + score +" player " + packet.getSender().getPeerId() + " date "  +  Date.now());
+    RTSession.getLogger().debug("Nhan duoc goi tin ket thuc van choi score " + score +" player " + packet.getSender().getPeerId() + " date "  +  new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
     num_end_score++;
     end_score[packet.getSender().getPeerId() + ""] = score;
     if(num_end_score == 2){
@@ -104,7 +115,7 @@ RTSession.onPacket(4, function(packet){
         for(var key in end_score){
             data.setNumber(parseInt(key), end_score[key]);    
         }
-        RTSession.getLogger().debug("Gui goi tin ket thuc tran dau " + " date "  +  Date.now());
+        RTSession.getLogger().debug("Gui goi tin ket thuc tran dau " + " date "  +  new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString());
         RTSession.newPacket().setReliable(true).setOpCode(4).setSender(packet.getSender().getPeerId()).setData(data).send();
     }else{
         return false;
