@@ -1,6 +1,6 @@
-var translateDB = Spark.metaCollection("translateMeta");
 
 function getTextTranslation(text,lang){
+    var translateDB = Spark.runtimeCollection("translateMeta");
     var text_in_db = translateDB.findOne({"text_en":text});
     if(lang == "en"){
         return text;
@@ -23,4 +23,20 @@ function getTextTranslation(text,lang){
     }
     
     return text;
+}
+
+function getLangList(){
+    var translateLangListDB = Spark.metaCollection("translateLangsMeta");
+    var langs = translateLangListDB.find({}).toArray();
+    if(langs.length == 0){
+        var link = "https://translation.googleapis.com/language/translate/v2/languages?key=AIzaSyAB_2A88IPZzfgFQLfe16KM2SvyEofvj7M&target=en";
+        var res = Spark.getHttp(link).get();//Lay phan dich tu google api
+        var status = res.getResponseJson();
+        if(!status.error){
+            translateDB.insert(status.data.languages);//Luu thong tin lay duoc vao db
+        }else{
+            return [];
+        }
+    }
+    return langs;
 }

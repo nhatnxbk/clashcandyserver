@@ -49,7 +49,6 @@ CONFIG.app_version_ios = 12;
 CONFIG.app_version_android = 12;
 CONFIG.time_energy_recover = 1000;
 CONFIG.time_change_to_bot = 30;
-CONFIG.num_level = NUM_LEVEL;
 CONFIG.leader_board_global = LEADER_BOARD_GLOBAL;
 CONFIG.leader_board_by_country = LEADER_BOARD_BY_COUNTRY;
 CONFIG.leader_board_by_friends = LEADER_BOARD_BY_FRIENDS;

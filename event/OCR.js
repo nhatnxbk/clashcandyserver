@@ -1,5 +1,4 @@
 //=========Online COntroller============//
-require("share");
 require("common");
 var playerDataList = Spark.runtimeCollection("playerData");
 var playerID = Spark.getPlayer().getPlayerId();
@@ -67,7 +66,10 @@ if(data.get_bot_player){
 	var opponentPlayer = get_bot_player_data();
 	opponentPlayer.level = BOT_LEVEL[parseInt(Math.random()* BOT_LEVEL.length)];
 	opponentPlayer.seed = parseInt(Math.random() * 100000);
-	opponentPlayer.level_data = get_level_data(101);
+	if(opponentPlayer.level_bot_data){
+	    opponentPlayer.level = opponentPlayer.level_bot_data.level;
+	}
+	opponentPlayer.level_data = get_level_data(opponentPlayer.level);
 	Spark.setScriptData("botData",opponentPlayer);
 }
 
@@ -172,6 +174,14 @@ if(data.online_match_end ){
 		"result" : false,
 		"full_chest": false
 	};
+	var log_eat_data = data.log_eat_data;
+	if(log_eat_data&&log_eat_data.size >= 5){
+	    var user_level_log = Spark.runtimeCollection("user_level_log");
+	    log_eat_data.game_type = data.game_type;
+	    log_eat_data.playerID = playerID;
+	    log_eat_data.trophies = currentPlayerData.trophies ? currentPlayerData.trophies : 0;
+	    user_level_log.insert(log_eat_data);
+	}
 	if(data.game_type != "friend"){
 		if(online_match_data !== null && !online_match_data.is_finish){
 			if(isWin || isDraw){
@@ -337,7 +347,7 @@ function get_level_data(level){
     return lvl_data;
 }
 
-function get_bot_player_data() {
+function get_bot_player_data(isEvent) {
 	var currentPlayerData = playerDataList.findOne({"playerID": playerID});
 	var friendList = (currentPlayerData && currentPlayerData.facebook_friend && currentPlayerData.facebook_friend.length > 0) ? currentPlayerData.facebook_friend : "";
 	var friendListArr = friendList ? JSON.parse(friendList) : [];
@@ -345,8 +355,43 @@ function get_bot_player_data() {
 	var online_match_data = onlineMatchList.findOne({"playerID":playerID});
 	var list_ignore = online_match_data && online_match_data.list_ignore ? online_match_data.list_ignore : [];
 	var opponentPlayer;
-	var opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+	var opponentPlayerData;
+	var offsetTrophies1 = server_config.offset_trophies_1;
+	var offsetTrophies2 = server_config.offset_trophies_2;
+	var offsetTrophies3 = server_config.offset_trophies_3;
+	// Find player has trophies around +/- 300
+	var myTrophies = currentPlayerData.trophies ? currentPlayerData.trophies : 0;
+	var trophiesMax = myTrophies + offsetTrophies1;
+	var trophiesMin = myTrophies > offsetTrophies1 ? myTrophies - offsetTrophies1 : 0;
+	if (IGNORE_HAS_RANDOM_TIME) {
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true,"$lte":trophiesMax,"$gte":trophiesMin},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+	} else {
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true,"$lte":trophiesMax,"$gte":trophiesMin},"facebook_id":{"$exists":true,"$nin":friendListArr},"has_random_time":true});
+	}
 	var opponentPlayerDataArr = opponentPlayerData.toArray();
+	if (!IGNORE_HAS_RANDOM_TIME && opponentPlayerDataArr.length == 0) {
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true,"$lte":trophiesMax,"$gte":trophiesMin},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+		opponentPlayerDataArr = opponentPlayerData.toArray();
+	}
+	//Find player has trophies around +/- 500
+	if (opponentPlayerDataArr.length == 0) {
+		trophiesMax = myTrophies + offsetTrophies2;
+		trophiesMin = myTrophies > offsetTrophies2 ? myTrophies - offsetTrophies2 : 0;
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true,"$lte":trophiesMax,"$gte":trophiesMin},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+		opponentPlayerDataArr = opponentPlayerData.toArray();
+	}
+	//Find player has trophies around +/- 800
+	if (opponentPlayerDataArr.length == 0) {
+		trophiesMax = myTrophies + offsetTrophies3;
+		trophiesMin = myTrophies > offsetTrophies3 ? myTrophies - offsetTrophies3 : 0;
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true,"$lte":trophiesMax,"$gte":trophiesMin},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+		opponentPlayerDataArr = opponentPlayerData.toArray();
+	}
+	//Find player has trophies
+	if (opponentPlayerDataArr.length == 0) {
+		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true},"facebook_id":{"$exists":true,"$nin":friendListArr}});
+		opponentPlayerDataArr = opponentPlayerData.toArray();
+	}
 	var count = 0;
 	while(count < 10) {
 		if (opponentPlayerDataArr.length == 0) {
@@ -354,40 +399,59 @@ function get_bot_player_data() {
 		}
 		var r = Math.floor(Math.random() * opponentPlayerDataArr.length);
 		var opponent = opponentPlayerDataArr[r];
-		if (list_ignore.indexOf(opponent.playerID) == -1) {
+		var levelBotList = Spark.runtimeCollection("user_level_log").find({"playerID": opponent.playerID,"level":{"$in":BOT_LEVEL}}).toArray();//Kiem tra xem co data log cua bot khong
+		if (levelBotList.length > 0 && list_ignore.indexOf(opponent.playerID) == -1) {
 			if(list_ignore.length == NUMBER_IGNORE_PLAYER){
 				list_ignore.pop();
 			}
 			list_ignore.unshift(opponent.playerID);
 			opponentPlayer = opponent;
+			var r2 = Math.floor(Math.random() * levelBotList.length);
+			opponentPlayer.level_bot_data = levelBotList[r2];
+			opponentPlayer.case1 = true;
 			onlineMatchList.update({"playerID": playerID}, {"$set": {"list_ignore": list_ignore}}, true,false);
 			break;
 		}
 		count++;
 	}
-	if (!opponentPlayer) {
+	if (!opponentPlayer) {//Lay random trong list user_level_log
 		count = 0;
-		opponentPlayerData = playerDataList.find({"playerID":{"$ne":playerID},"trophies":{"$exists":true}});
-		opponentPlayerDataArr = opponentPlayerData.toArray();
+		var levelBotList = Spark.runtimeCollection("user_level_log").find({"level":{"$in":BOT_LEVEL}}).toArray();
 		while(count < 10) {
-			var r = Math.floor(Math.random() * opponentPlayerDataArr.length);
-			var opponent = opponentPlayerDataArr[r];
+			var r = Math.floor(Math.random() * levelBotList.length);
+			var opponent = levelBotList[r];
 			if (list_ignore.indexOf(opponent.playerID) == -1) {
 				if(list_ignore.length == NUMBER_IGNORE_PLAYER){
 					list_ignore.pop();
 				}
 				list_ignore.unshift(opponent.playerID);
-				opponentPlayer = opponent;
+				opponentPlayer = playerDataList.findOne({"playerID":opponent.playerID});
+				opponentPlayer.level_bot_data = levelBotList[r];
+				opponentPlayer.case2 = true;
 				onlineMatchList.update({"playerID": playerID}, {"$set": {"list_ignore": list_ignore}}, true,false);
 				break;
 			}
 			count++;
 		}
 		if (!opponentPlayer) {
-			var r = Math.floor(Math.random() * opponentPlayerDataArr.length);
-			opponentPlayer = opponentPlayerDataArr[r];
+			var r = Math.floor(Math.random() * levelBotList.length);
+			opponentPlayer = playerDataList.findOne({"playerID":levelBotList[r].playerID});
+			opponentPlayer.case3 = true;
 		}
 	}
+	
+	if (isEvent) {
+		opponentPlayer.trophies = opponentPlayer.event_trophies ? opponentPlayer.event_trophies : 0;
+	}
+	
+	var levelBotList = Spark.runtimeCollection("user_level_log").find({"playerID": opponentPlayer.playerID,"level":{"$in":BOT_LEVEL}}).toArray();//Kiem tra xem co data log cua bot khong
+	if(levelBotList.length == 0){
+	    opponentPlayer.level_bot_data = null;
+	}else{
+	    var r2 = Math.floor(Math.random() * levelBotList.length);
+		opponentPlayer.level_bot_data = levelBotList[r2];
+	}
+
 	var cardData = opponentPlayer.card_data;
 	if (!cardData) {
 		cardData = cardMaster.find({"card_default":1}).toArray();
@@ -400,6 +464,7 @@ function get_bot_player_data() {
 		card.current_energy = getCardEnergy(card, card.current_level);
 	});
 	opponentPlayer.card_data = cardData;
+
 	return opponentPlayer;
 }
 

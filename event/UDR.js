@@ -1,7 +1,7 @@
 //=========User Data Request Controller============//
-require("share");
 require("common");
 require("translate_text");
+require("api");
 var userFeedbackData = Spark.runtimeCollection("user_feedback");
 var userNotice = Spark.runtimeCollection("user_notice");
 var playerID = Spark.getPlayer().getPlayerId();
@@ -36,8 +36,14 @@ if(data.get_translate_data){
             response.text1 = [
                 getTextTranslation("In this game, you and enemy have different target.",lang),
                 getTextTranslation("You must eat your target as soon as possible",lang),
+                getTextTranslation("Remember do not eat enemy target.",lang),
             ];
-            
+            response.text2 = [
+                getTextTranslation("This is your target.",lang),
+                getTextTranslation("This is enemy's target.",lang),
+                getTextTranslation("Touch in card that you do not use to make it disappear.",lang),
+                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+            ];
             break;
          case "tutorial_game_target_ingredient":
             response.text1 = [
@@ -657,11 +663,22 @@ if (data.get_chest_data_to_open_now) {
 	}
 	Spark.setScriptData("data", response);
 }
-<<<<<<< d77d92a8d467d0943fc935950a39554e10a16417
-=======
 
->>>>>>> Server xong tutorial va download map online
 //=====================RQ debug======================//
+if(data.debug_test_unity_ads_api){
+    var list = JSON.parse(csvJSON(GetUnityAdsToday()));
+    var text = "";
+    for(var i in list){
+    if(parseFloat(list[i]["revenue"].replace("\"","").replace("\"","")) > 0.5){
+        text += list[i]["Source game name"].replace("\"","").replace("\"","") + " " 
+        + "\nView: " + list[i]["views"].replace("\"","").replace("\"","") 
+        + " Money: " + list[i]["revenue"].replace("\"","").replace("\"","") + "$"+"\n";
+    }
+}
+    text += " <https://dashboard.unityads.unity3d.com/|Detail>";
+    var status = SendSlack(text + " <!here>").getResponseString();
+    Spark.setScriptData("data", status + text + " " +csvJSON(GetUnityAdsToday()));
+}
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
 	var cardID = data.card_id ? data.card_id : -1;
@@ -807,6 +824,11 @@ if (data.debug_add_card_master) {
 	// 		card_id++;
 	// 	}
 	// }
+}
+
+if(data.debug_send_slack){
+    var mes = data.message;
+    Spark.setScriptData("data",SendSlack(mes).getResponseJson());
 }
 
 //=====================function======================//

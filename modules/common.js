@@ -1,5 +1,6 @@
 //===========common function================//
 require("share");
+require("api");
 var levelMaster = Spark.metaCollection("level_master");
 var playerCollection = Spark.runtimeCollection("playerData");
 var playerDataSys = Spark.systemCollection("player");
