@@ -27,15 +27,16 @@ function getTextTranslation(text,lang){
 
 function getLangList(){
     var translateLangListDB = Spark.metaCollection("translateLangsMeta");
-    var langs = translateLangListDB.find({}).toArray();
+    var langs = translateLangListDB.find({}).sort({"name":1}).toArray();
     if(langs.length == 0){
         var link = "https://translation.googleapis.com/language/translate/v2/languages?key=AIzaSyAB_2A88IPZzfgFQLfe16KM2SvyEofvj7M&target=en";
         var res = Spark.getHttp(link).get();//Lay phan dich tu google api
         var status = res.getResponseJson();
         if(!status.error){
-            translateDB.insert(status.data.languages);//Luu thong tin lay duoc vao db
+            translateLangListDB.insert(status.data.languages);//Luu thong tin lay duoc vao db
+            return status.data.languages;
         }else{
-            return [];
+            return status.error;
         }
     }
     return langs;

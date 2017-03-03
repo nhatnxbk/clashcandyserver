@@ -2,6 +2,7 @@
 require("common");
 require("translate_text");
 require("api");
+require("GameString");
 var userFeedbackData = Spark.runtimeCollection("user_feedback");
 var userNotice = Spark.runtimeCollection("user_notice");
 var playerID = Spark.getPlayer().getPlayerId();
@@ -9,6 +10,17 @@ var playerData = playerCollection.findOne({"playerID":playerID});
 var data = Spark.getData().data;
 if(!data) data = {};
 var timeNow = getTimeNow();
+
+if(data.get_lang_list){
+    Spark.setScriptData("lang_list", getLangList());
+    Spark.setScriptData("my_lang", playerData.lang ? playerData.lang : "en");
+}
+
+if(data.set_translate_data){
+    var key = data.key;
+    playerCollection.update({"playerID":playerID},{"$set":{"lang":key}},true,false);
+    Spark.setScriptData("string_list", getGameString(key));
+}
 
 if(data.get_translate_data){
     var key = data.key;
@@ -53,10 +65,18 @@ if(data.get_translate_data){
                 getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
             ];
             break;
-        case "tutorial_game_chest_first_received":
+        case "tutorial_game_chest_first_open_by_coin":
             response.text1 = [
-                getTextTranslation("After win one battle, you will be receive one chest", lang),
-                getTextTranslation("There are 5 kind of chest. Touch into your chest to open", lang)
+                getTextTranslation("Wow, you got another treasure. You can use coin to open this treasure immediately.", lang),
+                getTextTranslation("Touch into this treasure to open immediately by coin.", lang)
+            ];
+            break;
+        case "tutorial_game_upgrade_card":
+        	response.text1 = [
+                getTextTranslation("You have a list card. Touch here to view.", lang),
+                getTextTranslation("The card can be upgraded. Touch to the card you want to upgrade", lang),
+                getTextTranslation("To upgrade card need enough the number card and coin", lang),
+                getTextTranslation("Touch here to upgrade card", lang)
             ];
             break;
         default:
@@ -665,6 +685,10 @@ if (data.get_chest_data_to_open_now) {
 }
 
 //=====================RQ debug======================//
+if(data.debug_some_thing){
+    Spark.setScriptData("data", getGameString("vi"));
+}
+
 if(data.debug_test_unity_ads_api){
     var list = JSON.parse(csvJSON(GetUnityAdsToday()));
     var text = "";

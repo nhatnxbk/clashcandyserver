@@ -1,11 +1,17 @@
 require("share");
 require("common");
+require("translate_text");
+require("GameString");
 
 var playerID = Spark.getPlayer().getPlayerId();
 var currentPlayer = playerCollection.findOne({"playerID": playerID});
+var currentServerPlayer = playerServerCollection.findOne({"playerID": playerID});
 
 if (currentPlayer === null){
     currentPlayer = {};
+}
+if (currentServerPlayer === null){
+    currentServerPlayer = {gameStringVersion:0};
 }
 if(!("trophies" in currentPlayer)){
   currentPlayer.trophies = USER_START_TROPHY + parseInt(Math.random()*100);
@@ -25,6 +31,15 @@ if(!("trophies" in currentPlayer)){
 if(!currentPlayer.avatar_local){
     currentPlayer.avatar_local = parseInt(Math.random() * 100);
 }
+if(!currentPlayer.lang){
+    Spark.setScriptData("lang_list", getLangList());
+}else{
+    if(currentServerPlayer.gameStringVersion < gameString.VERSION){
+        Spark.setScriptData("string_list", getGameString(currentPlayer.lang));
+        playerServerCollection.update({"playerID": playerID}, {"$set":{"gameStringVersion":gameString.VERSION}},true,false);
+    }
+}
+
 //======== Add default card for new user =========//
 if (!currentPlayer.card_data) {
   var cardData = cardMaster.find({"card_default":1}).toArray();

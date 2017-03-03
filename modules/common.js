@@ -1,8 +1,10 @@
 //===========common function================//
 require("share");
 require("api");
+require("translate_text");
 var levelMaster = Spark.metaCollection("level_master");
 var playerCollection = Spark.runtimeCollection("playerData");
+var playerServerCollection = Spark.runtimeCollection("playerServerData");
 var playerDataSys = Spark.systemCollection("player");
 var storeMaster = Spark.metaCollection("store_master");
 var storeDaily = Spark.runtimeCollection("store_daily");
