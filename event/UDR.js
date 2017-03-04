@@ -74,9 +74,16 @@ if(data.get_translate_data){
         case "tutorial_game_upgrade_card":
         	response.text1 = [
                 getTextTranslation("You have a list card. Touch here to view.", lang),
+                getTextTranslation("There are 3 kind of card: common, rare and epic", lang),
                 getTextTranslation("The card can be upgraded. Touch to the card you want to upgrade", lang),
-                getTextTranslation("To upgrade card need enough the number card and coin", lang),
-                getTextTranslation("Touch here to upgrade card", lang)
+                getTextTranslation("To upgrade card need enough the number card and coin. Touch here to upgrade card", lang),
+                getTextTranslation("Your card was upgraded success. Touch here to close", lang)
+            ];
+            response.text2 = [
+                getTextTranslation("You can buy card in the store, touch here to go store.", lang),
+                getTextTranslation("Touch to card you want buy", lang),
+                getTextTranslation("You can buy one card or buy all card in store. Touch here to buy one card.", lang),
+                getTextTranslation("You have bought one card, now we will go to battle", lang)
             ];
             break;
         default:
