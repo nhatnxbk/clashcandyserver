@@ -92,6 +92,20 @@ if(data.get_translate_data){
     Spark.setScriptData("data", response);
 }
 
+//update player data
+if (data.update_player_data) {
+	var updatePlayerID = data.player_id ? data.player_id : playerID;
+	var updatePlayerData = data.player_id && data.player_id != playerID ? playerCollection.findOne({"playerID":data.player_id}): playerData;
+	if (data.facebook_id) {
+		updatePlayerData.facebook_id = data.facebook_id;
+	}
+	if (data.friend_facebook_id) {
+		updatePlayerData.friend_facebook_id = data.friend_facebook_id;
+	}
+	playerCollection.update({"playerID":updatePlayerID},{"$set":updatePlayerData}, true, false);
+	Spark.setScriptData("data", {"result":true});
+}
+
 //update one signal player id
 if (data.one_signal_player_id) {
 	var response;
