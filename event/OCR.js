@@ -170,6 +170,7 @@ if(data.online_match_end ){
 	var online_match_data =onlineMatchList.findOne({"playerID":playerID});
 	var bonus_coin = 0;
 	var bonus_exp = 0;
+	var chestType = currentPlayerData.online_win < 5 ? 2 : 0;
 	var chestReceived = {
 		"result" : false,
 		"full_chest": false
@@ -217,8 +218,7 @@ if(data.online_match_end ){
 				opponent_bonus = get_bonus_trophies_win(online_match_data.opponent_trophy,online_match_data.my_trophy);
 				bonus_exp  = getExpBattleLose(playerID);
 			}
-            
-            var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
+            var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData, chestType);
 			if (playerDataAfterReceiveChest.data.result) {
 				currentPlayerData = playerDataAfterReceiveChest.player_data;
 				chestReceived = playerDataAfterReceiveChest.data;

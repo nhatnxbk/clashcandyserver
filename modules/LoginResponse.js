@@ -41,19 +41,14 @@ if(!currentPlayer.lang){
 }
 
 //======== Add default card for new user =========//
-if (!currentPlayer.card_data) {
+if (!currentPlayer.card_data || currentPlayer.card_data.length == 0) {
   var cardData = cardMaster.find({"card_default":1}).toArray();
-  var userCardData = [];
-  for(var i = 0; i < cardData.length; i++) {
-      var card = cardData[i];
-      card.current_level = 1;
-      card.current_number = 1;
-  }
   currentPlayer.card_data = cardData;
 }
 
-if (!currentPlayer.player_coin) {
+if (!currentPlayer.player_coin && !currentPlayer.init_player_coin) {
     currentPlayer.player_coin = DEFAULT_COIN;
+    currentPlayer.init_player_coin = true;
 }
 
 //======== Caculate time can request and receive energy or not=========//

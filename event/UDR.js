@@ -65,6 +65,12 @@ if(data.get_translate_data){
                 getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
             ];
             break;
+        case "tutorial_game_chest_first_received":
+            response.text1 = [
+                getTextTranslation("After win one battle, you will be receive one treasure", lang),
+                getTextTranslation("There are 5 kind treasure. Touch into your treasure to open", lang)
+            ];
+            break;
         case "tutorial_game_chest_first_open_by_coin":
             response.text1 = [
                 getTextTranslation("Wow, you got another treasure. You can use coin to open this treasure immediately.", lang),
@@ -99,8 +105,8 @@ if (data.update_player_data) {
 	if (data.facebook_id) {
 		updatePlayerData.facebook_id = data.facebook_id;
 	}
-	if (data.friend_facebook_id) {
-		updatePlayerData.friend_facebook_id = data.friend_facebook_id;
+	if (data.facebook_friend) {
+		updatePlayerData.facebook_friend = data.facebook_friend;
 	}
 	playerCollection.update({"playerID":updatePlayerID},{"$set":updatePlayerData}, true, false);
 	Spark.setScriptData("data", {"result":true});

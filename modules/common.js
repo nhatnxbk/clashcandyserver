@@ -341,8 +341,13 @@ function addChestToPlayer(playerID, chestData) {
 	return message;
 }
 
-function addChestToPlayerAfterBattle(playerData) {
-	var chestDataMaster = getChestDataMasterByProbability();
+function addChestToPlayerAfterBattle(playerData, chestType) {
+	var chestDataMaster;
+	if (chestType) {
+		chestDataMaster = getChestDataMasterByType(chestType);
+	} else {
+		chestDataMaster = getChestDataMasterByProbability();
+	}
 	var chestData = getChestData(chestDataMaster);
 	chestData.status = server_config.chest_status.locked;
 	chestData.time_remain = chestData.time_out / 1000;
