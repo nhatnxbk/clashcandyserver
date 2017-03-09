@@ -666,7 +666,7 @@ if (data.get_store_data) {
 if (data.get_data_for_main) {
 	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
 	var storeData = getStoreInfo(data.player_id ? data.player_id : playerID);
-	var chestData = player ? player.chest_data : {};
+	var chestData = player && player.chest_data ? player.chest_data : {};
 	if (chestData) {
 		for (var i = 1; i < 5; i++) {
 			var chest = chestData["chest"+i];
