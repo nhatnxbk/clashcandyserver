@@ -6,4 +6,4 @@
 //
 // ====================================================================================================
 require("common");
-SendSlack("User dang tim kiem nguoi choi cung" + Spark.getPlayer().getPlayerId());
+// SendSlack("User dang tim kiem nguoi choi cung" + Spark.getPlayer().getPlayerId());

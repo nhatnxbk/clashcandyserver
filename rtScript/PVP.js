@@ -1,10 +1,5 @@
-// ====================================================================================================
-//
-// Cloud Code for module, write your code here to customise the GameSparks platform.
-//
-// For details of the GameSparks Cloud Code API see https://portal.gamesparks.net/docs.htm			
-//
-// ====================================================================================================
+var NORMAL_LEVEL = [25,28,29,30,32,33,34,35,36,37,38,45];
+
 var playerCount = 0;
 RTSession.onPlayerConnect(function(player){
     if(++playerCount == 2){
@@ -20,8 +15,10 @@ RTSession.onPlayerConnect(function(player){
         request.setdata({"level":level,"get_level_data":true});
         request.setPlayerId(player.getPlayerId())
             .send(function(response){
-                RTSession.getLogger().debug("Nhan duoc goi tin lay thong tin level " + JSON.stringify(response));
-                data.setString(3, response.scriptData.data.data);
+                RTSession.getLogger().debug("Nhan duoc goi tin lay thong tin level " +level+" " + JSON.stringify(response.scriptData));
+                if(response.scriptData.data){
+                    data.setString(3, response.scriptData.data.data);
+                }
                 RTSession.newPacket().setReliable(true).setOpCode(100).setData(data).send();
             });
         
@@ -57,7 +54,7 @@ RTSession.onPacket(2, function(packet){
     RTSession.getLogger().debug("Bat dau tran dau " + startMapCount+ " time "+ new Date().toLocaleDateString()+ " " + new Date().toLocaleTimeString());
     startMapCount++;
     if(startMapCount == 1) return false;
-    RTSession.newPacket().setOpCode(2).send();
+    RTSession.newPacket().setOpCode(2).setReliable(true).send();
     return false;
 });
 

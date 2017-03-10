@@ -41,7 +41,9 @@ if (data.leader_board_type == LEADER_BOARD_BY_FRIENDS) {
 			"rank"     : (listRank.length + 1),
 			"trophies" : opponent.trophies ? opponent.trophies : 0,
 			"userName" : opponent.userName ? opponent.userName : defaultName,
-			"userId"   : opponent.playerID
+			"userId"   : opponent.playerID,
+			"avatar_local"   : opponent && opponent.avatar_local ? opponent.avatar_local : 0,
+			"facebook_id"   : opponent && opponent.facebook_id ? opponent.facebook_id : "",
 		};
 		if (opponent.playerID == playerID) {
 			myPlayerRank = rank;
@@ -53,7 +55,9 @@ if (data.leader_board_type == LEADER_BOARD_BY_FRIENDS) {
 			"rank"     : listRank.length > 0 ? 101 : 1,
 			"trophies" : currentPlayer && currentPlayer.trophies ? currentPlayer.trophies : 0,
 			"userName" : currentPlayer && currentPlayer.userName ? currentPlayer.userName : "You",
-			"userId"   : currentPlayer && currentPlayer.playerID ? currentPlayer.playerID : 0
+			"userId"   : currentPlayer && currentPlayer.playerID ? currentPlayer.playerID : 0,
+			"avatar_local"   : currentPlayer && currentPlayer.avatar_local ? currentPlayer.avatar_local : 0,
+			"facebook_id"   : currentPlayer && currentPlayer.facebook_id ? currentPlayer.facebook_id : "",
 		};
 	}
 	var dataResponse = {
@@ -85,6 +89,9 @@ function RQMyPlayerRank(shortCode) {
 				"userName" : opponent.userName ? opponent.userName : "You",
 				"userId"   : opponent.userId
 			};
+			var myPlayerData = playerData.findOne({"playerID":playerID},{"playerID":1,"avatar_local":1,"facebook_id":1});
+			myPlayerRank.avatar_local = myPlayerData.avatar_local;
+			myPlayerRank.facebook_id = myPlayerData.facebook_id;
 			return myPlayerRank;
 		}
 	}
@@ -106,8 +113,9 @@ function RQLeaderBoard(shortCode) {
 	var response = request.Send();
 	var data = response.data;
 	if (!data) data = [];
-	var listRank = [];
+	var objRank = {};
 	var myPlayerRank;
+	var listIds = [];
 	for (var i = 0; i < data.length; i++) {
 		var opponent = data[i];
 		var defaultName = playerID == opponent.userId ? "You" : opponent.userId;
@@ -117,11 +125,29 @@ function RQLeaderBoard(shortCode) {
 			"userName" : opponent.userName ? opponent.userName : defaultName,
 			"userId"   : opponent.userId
 		};
-		listRank.push(rank);
-		if (playerID == opponent.userId) {
-			myPlayerRank = rank;
+		listIds.push(opponent.userId);
+	}
+	
+
+    var listRank = [];
+	//Tim playerData trong list
+	var listPlayerData = playerData.find({"playerID":{"$in":listIds}},{"playerID":1,"avatar_local":1,"facebook_id":1}).toArray();
+	for(var i = 0; i< listPlayerData.length; i++){
+	    var opponent = listPlayerData[i];
+	    objRank[opponent.playerID] = opponent;
+	}
+    
+	for(var i = 0; i< data.length; i++){
+	    var player = data[i];
+	    var obj = objRank[player.userId];
+	    player.avatar_local = obj.avatar_local?obj.avatar_local:0;
+	    player.facebook_id = obj.facebook_id;
+	    listRank.push(player);
+	    if (playerID == player.userId) {
+			myPlayerRank = player;
 		}
 	}
+
 	var dataResponse = {
 		"listRank" 	   : listRank,
 		"myPlayerRank" : myPlayerRank
