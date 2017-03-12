@@ -733,6 +733,31 @@ if(data.debug_test_unity_ads_api){
     var status = SendSlack(text + " <!here>").getResponseString();
     Spark.setScriptData("data", status + text + " " +csvJSON(GetUnityAdsToday()));
 }
+
+if (data.debug_reset_user_data) {
+	var response = {
+		"result" : true,
+		"message" : "Reset user data success!"
+	}
+	var updatePlayerData = {
+		"online_win": 0,
+		"online_lose":0,
+		"chest_data": {},
+		"card_data": [],
+		"player_coin": 0,
+		"init_player_coin": false,
+		"game_tutorial_step": 0,
+		"online_bot_start":0,
+		"online_match_start":0,
+		"current_level":1,
+		"current_exp":0,
+		"trophies":0,
+		"highest_trophy":0
+	}
+	playerCollection.update({"playerID":playerID},{"$set":updatePlayerData}, true, false);
+	Spark.setScriptData("data",response);
+}
+
 if (data.debug_add_card) {
 	var number = data.number ? data.number : 500;
 	var cardID = data.card_id ? data.card_id : -1;
