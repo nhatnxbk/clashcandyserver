@@ -108,6 +108,9 @@ if (data.update_player_data) {
 	if (data.facebook_friend) {
 		updatePlayerData.facebook_friend = data.facebook_friend;
 	}
+	if (data.game_tutorial_step) {
+	    updatePlayerData.game_tutorial_step = data.game_tutorial_step;
+	}
 	playerCollection.update({"playerID":updatePlayerID},{"$set":updatePlayerData}, true, false);
 	Spark.setScriptData("data", {"result":true});
 }
