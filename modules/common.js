@@ -71,8 +71,10 @@ function getStoreInfo(playerID) {
 	storeInfo.pack_life = packLife;
 	// storeInfo.pack_bomb = packBomb;
 	var packDaily = storeDaily.findOne({"playerID":playerID});
-	if (packDaily && timeNow - packDaily.time < 5*60*1000) {
+	if (packDaily && timeNow - packDaily.time < server_config.time_reload_card_store) {
 		storeInfo.pack_card = packDaily.pack_card;
+		storeInfo.time_remain = parseInt((server_config.time_reload_card_store - (timeNow - packDaily.time)) / 1000);
+		storeInfo.store_id = packDaily.id ? packDaily.id : 0;
 	} else {
 		var listCard = cardMaster.find().toArray();
 		var lastListCard = packDaily && packDaily.pack_card ? packDaily.pack_card : [];
@@ -106,12 +108,15 @@ function getStoreInfo(playerID) {
 				lastListCardID.push(card.card_id);
 			}
 		}
+		var currentPackID = packDaily.id ? packDaily.id + 1 : 1;
 		if (packDaily) {
-			storeDaily.update({"playerID":playerID},{"$set":{"pack_card":packCard,"time":timeNow}}, true, false);
+			storeDaily.update({"playerID":playerID},{"$set":{"pack_card":packCard,"time":timeNow, "id":currentPackID}}, true, false);
 		} else {
-			storeDaily.insert({"playerID":playerID,"pack_card":packCard,"time":timeNow});
+			storeDaily.insert({"playerID":playerID,"pack_card":packCard,"time":timeNow, "id":currentPackID});
 		}
 		storeInfo.pack_card = packCard;
+		storeInfo.time_remain = parseInt(server_config.time_reload_card_store / 1000);
+		storeInfo.store_id = currentPackID;
 	}
 	return storeInfo;
 }
