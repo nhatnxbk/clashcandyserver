@@ -108,7 +108,7 @@ function getStoreInfo(playerID) {
 				lastListCardID.push(card.card_id);
 			}
 		}
-		var currentPackID = packDaily.id ? packDaily.id + 1 : 1;
+		var currentPackID = packDaily && packDaily.id ? packDaily.id + 1 : 1;
 		if (packDaily) {
 			storeDaily.update({"playerID":playerID},{"$set":{"pack_card":packCard,"time":timeNow, "id":currentPackID}}, true, false);
 		} else {
