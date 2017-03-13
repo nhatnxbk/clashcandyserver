@@ -263,6 +263,7 @@ if(data.online_match_cancel){
 	if(data.game_type == "friend"){
 		remove_room();
 	}
+	Spark.getMultiplayer().cancelMatchmaking(Spark.getPlayer(), "PVP", null);
 }
 
 if(data.get_friend_room_list){
