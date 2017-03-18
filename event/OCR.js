@@ -195,11 +195,12 @@ if(data.online_match_end ){
 					bonus_coin = getCoinBattleWin(playerID);
 					bonus_exp  = getExpBattleWin(playerID);
 					// add chest to player
-				// 	var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData);
-				// 	if (playerDataAfterReceiveChest.data.result) {
-				// 		currentPlayerData = playerDataAfterReceiveChest.player_data;
-				// 		chestReceived = playerDataAfterReceiveChest.data;
-				// 	}
+					var chestType = currentPlayerData.online_win < 5 ? 2 : 0;
+					var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData, chestType);
+					if (playerDataAfterReceiveChest.data.result) {
+						currentPlayerData = playerDataAfterReceiveChest.player_data;
+						chestReceived = playerDataAfterReceiveChest.data;
+					}
 				}else if(isDraw){
 					bonus = 0;
 					opponent_bonus = 0;
@@ -217,12 +218,12 @@ if(data.online_match_end ){
 				opponent_bonus = get_bonus_trophies_win(online_match_data.opponent_trophy,online_match_data.my_trophy);
 				bonus_exp  = getExpBattleLose(playerID);
 			}
-            var chestType = currentPlayerData.online_win < 5 ? 2 : 0;
-            var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData, chestType);
-			if (playerDataAfterReceiveChest.data.result) {
-				currentPlayerData = playerDataAfterReceiveChest.player_data;
-				chestReceived = playerDataAfterReceiveChest.data;
-			}
+            // var chestType = currentPlayerData.online_win < 5 ? 2 : 0;
+   			// var playerDataAfterReceiveChest = addChestToPlayerAfterBattle(currentPlayerData, chestType);
+			// if (playerDataAfterReceiveChest.data.result) {
+			// 	currentPlayerData = playerDataAfterReceiveChest.player_data;
+			// 	chestReceived = playerDataAfterReceiveChest.data;
+			// }
 			online_match_data.is_finish = true;
 			//rank of myPlayer after match_end
 			myRank = get_current_rank_with_friends();
