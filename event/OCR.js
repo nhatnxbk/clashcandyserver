@@ -264,7 +264,7 @@ if(data.online_match_cancel){
 	if(data.game_type == "friend"){
 		remove_room();
 	}
-	Spark.getMultiplayer().cancelMatchmaking(Spark.getPlayer(), "PVP", null);
+    Spark.getMultiplayer().cancelMatchmaking(Spark.getPlayer(), "PVP", null);
 }
 
 if(data.get_friend_room_list){
@@ -456,7 +456,7 @@ function get_bot_player_data(isEvent) {
 
 	var cardData = opponentPlayer.card_data;
 	if (!cardData) {
-		cardData = cardMaster.find({"card_default":1}).toArray();
+		cardData = cardMaster.find({"card_default":1},{"card_score":0,"card_energy":0,"description":false}).toArray();
 		for(var i = 0; i < cardData.length; i++) {
 			cardData[i].current_level = 1;
 		}

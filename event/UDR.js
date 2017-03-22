@@ -369,10 +369,10 @@ if (data.buy_card) {
 				playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
 					{"$set":{"player_coin":playerCoin, "current_exp": playerExp, "current_level":levelInfo.level, "card_data.$.current_number": cardPlayer.current_number}}, true, false);
 			} else {
-				cardPlayer = cardMaster.findOne({"card_id":cardStore.card_id});
+				cardPlayer = cardMaster.findOne({"card_id":cardStore.card_id},{"card_score":0,"card_energy":0,"description":false});
 				cardPlayer.current_level = 1;
 				cardPlayer.current_number = numberCard;
-				cardPlayer = getCardFull(cardPlayer);
+				cardPlayer = getCardFull(cardPlayer,playerData.lang);
 				var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 				listPlayerCard.push(cardPlayer);
 				playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerCoin,"current_exp": playerExp, "current_level":levelInfo.level, "card_data":listPlayerCard}}, true, false);
@@ -763,7 +763,7 @@ if (data.debug_add_card) {
 	var cardID = data.card_id ? data.card_id : -1;
     var playerCardData = playerData.card_data ? playerData.card_data : [];
     var response;
-    var cardDataMaster = cardMaster.find().toArray();
+    var cardDataMaster = cardMaster.find({},{"card_score":0,"card_energy":0,"description":false}).toArray();
     if (cardID == -1) {
     	for (var i = 0; i < cardDataMaster.length; i++) {
     		var isAdded = false;
@@ -790,7 +790,7 @@ if (data.debug_add_card) {
 	    	}
 	    }
 	    if (!isAdded) {
-	    	var cardData = cardMaster.findOne({"card_id":cardID});
+	    	var cardData = cardMaster.findOne({"card_id":cardID},{"card_score":0,"card_energy":0,"description":false});
 	    	if (cardData) {
 	    		cardData.current_number = number;
 	    		cardData.current_level = 1;
@@ -803,14 +803,14 @@ if (data.debug_add_card) {
     response = {
     	"result":true,
     	"message": "You have got " + number + " card for each kind!",
-  		"card_data": getListCardFull(playerCardData)
+  		"card_data": getListCardFull(playerCardData,playerData.lang)
   	}
 
     Spark.setScriptData("data", response);
 }
 
 if (data.debug_reset_card) {
-	var cardData = cardMaster.find({"card_default":1}).toArray();
+	var cardData = cardMaster.find({"card_default":1},{"card_score":0,"card_energy":0,"description":false}).toArray();
 	for(var i = 0; i < cardData.length; i++) {
 		var card = cardData[i];
 		card.current_level = 1;
@@ -820,7 +820,7 @@ if (data.debug_reset_card) {
 	var response = {
     	"result":true,
     	"message": "Reset card success",
-  		"card_data": getListCardFull(cardData)
+  		"card_data": getListCardFull(cardData,playerData.lang)
   	}
 	Spark.setScriptData("data", response);
 }
@@ -1041,10 +1041,10 @@ function _claimChest(chest) {
 			playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
 			{"$set":{"card_data.$.current_number": cardPlayer.current_number, "chest_data":chestData}}, true, false);
 		} else {
-			cardPlayer = cardMaster.findOne({"card_id":card.card_id});
+			cardPlayer = cardMaster.findOne({"card_id":card.card_id},{"card_score":0,"card_energy":0,"description":false});
 			cardPlayer.current_level = 1;
 			cardPlayer.current_number = card.current_number;
-			cardPlayer = getCardFull(cardPlayer);
+			cardPlayer = getCardFull(cardPlayer,playerData.lang);
 			var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 			listPlayerCard.push(cardPlayer);
 			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard},"$unset":{"chest_data":{chestKey:""}}}, true, false);

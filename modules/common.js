@@ -76,7 +76,7 @@ function getStoreInfo(playerID) {
 		storeInfo.time_remain = parseInt((server_config.time_reload_card_store - (timeNow - packDaily.time)) / 1000);
 		storeInfo.store_id = packDaily.id ? packDaily.id : 0;
 	} else {
-		var listCard = cardMaster.find().toArray();
+		var listCard = cardMaster.find({},{"card_score":0,"card_energy":0,"description":false}).toArray();
 		var lastListCard = packDaily && packDaily.pack_card ? packDaily.pack_card : [];
 		var lastListCardID = [];
 		lastListCard.forEach(function(card){
@@ -121,14 +121,14 @@ function getStoreInfo(playerID) {
 	return storeInfo;
 }
 
-function getListCardFull(list_card) {
+function getListCardFull(list_card,lang) {
 	list_card.forEach(function(card){
-		card = getCardFull(card);
+		card = getCardFull(card,lang);
 	});
 	return list_card;
 }
 
-function getCardFull(card) {
+function getCardFull(card,lang) {
 	card.current_score = getCardScore(card, card.current_level);
 	card.current_energy = getCardEnergy(card, card.current_level);
 	card.next_level = card.current_level < card_level_max ? card.current_level + 1 : card.current_level;
@@ -136,6 +136,12 @@ function getCardFull(card) {
 	card.next_energy = getCardEnergy(card, card.next_level);
 	card.next_number = getCardNumberNeed(card.rarity, card.next_level);
 	card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
+	var cardInfo = getCardFromCache(card.card_id);
+	if(lang && lang != "en" &&cardInfo.description){
+	    card.description = getTextTranslation(cardInfo.description,lang);
+	}else if(card.description){
+	    card.description = cardInfo.description;
+	}
 	return card;
 }
 
@@ -163,12 +169,31 @@ function getCardPlayer(playerID, cardID) {
 	return undefined;
 }
 
+function getCardFromCache(cardId){
+    var card = Spark.getCache().get("card_" + cardId);
+    if(!card){
+        card = cardMaster.findOne({card_id:cardId});
+        Spark.getCache().put("card_" + cardId, card);
+    }
+    return card;
+}
+
 function getCardScore(card, level) {
-	return level <= card_level_max && level > 0 ? card.card_score[level - 1] : card.card_score[0];
+    var cardInfo = getCardFromCache(card.card_id);
+    if(!cardInfo){
+        Spark.getLog().error("Khong tim thay card trong card master id " + card.card_id);
+        return 0;
+    }
+	return level <= card_level_max && level > 0 ? cardInfo.card_score[level - 1] : cardInfo.card_score[0];
 }
 
 function getCardEnergy(card, level) {
-	return level <= card_level_max && level > 0 ? card.card_energy[level - 1] : card.card_energy[0];
+    var cardInfo = getCardFromCache(card.card_id);
+    if(!cardInfo){
+        Spark.getLog().error("Khong tim thay card trong card master id " + card.card_id);
+        return 100;
+    }
+	return level <= card_level_max && level > 0 ? cardInfo.card_energy[level - 1] : cardInfo.card_energy[0];
 }
 
 function getCardNumberNeed(rarity, level) {
@@ -284,7 +309,7 @@ function getChestData(chestDataMaster) {
 	while(totalNumberCard < chestDataMaster.number_card) {
 		var cardResult = {};
 		var cardRewardMaster = getCardByProbability(chestDataMaster.card);
-		var listCardMaster = cardMaster.find({"rarity":cardRewardMaster.rarity}).toArray();
+		var listCardMaster = cardMaster.find({"rarity":cardRewardMaster.rarity},{"card_score":0,"card_energy":0,"description":false}).toArray();
 		var idx = Math.floor(Math.random() * listCardMaster.length);
 		var card = listCardMaster[idx];
 		if (listCardID.indexOf(card.card_id) != -1) {

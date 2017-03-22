@@ -42,7 +42,7 @@ if(!currentPlayer.lang){
 
 //======== Add default card for new user =========//
 if (!currentPlayer.card_data || currentPlayer.card_data.length == 0) {
-  var cardData = cardMaster.find({"card_default":1}).toArray();
+  var cardData = cardMaster.find({"card_default":1},{"card_score":0,"card_energy":0,"description":false}).toArray();
   currentPlayer.card_data = cardData;
 }
 
@@ -108,7 +108,7 @@ delete currentPlayer.rto_5;
 // }
 
 //card data
-currentPlayer.card_data = getListCardFull(currentPlayer.card_data);
+currentPlayer.card_data = getListCardFull(currentPlayer.card_data,currentPlayer.lang);
 
 //chest data
 // var chestData = currentPlayer.chest_data;
