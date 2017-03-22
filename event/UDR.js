@@ -124,12 +124,12 @@ if (data.one_signal_player_id) {
 		playerCollection.update({"playerID":playerID}, {"$set":{"one_signal_player_id":data.userId}}, true, false);
 		response = {
 			"result"  : true,
-			"message" : getTextTranslation("Update one signal player id success",lang);
+			"message" : getTextTranslation("Update one signal player id success",lang)
 		}
 	} else {
 		response = {
 			"result"  : false,
-			"message" : getTextTranslation("Update one signal player id failure",lang);
+			"message" : getTextTranslation("Update one signal player id failure",lang)
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -147,12 +147,12 @@ if (data.change_user_name) {
 		});
 		response = {
 			"result": true,
-			"message": getTextTranslation("Change name success!",lang);
+			"message": getTextTranslation("Change name success!",lang)
 		}
 	} else {
 		response = {
 			"result": false,
-			"message": getTextTranslation("Your name must not be empty!",lang);
+			"message": getTextTranslation("Your name must not be empty!",lang)
 		}
 	}
 	Spark.setScriptData("data", response);
