@@ -7,6 +7,8 @@ var userFeedbackData = Spark.runtimeCollection("user_feedback");
 var userNotice = Spark.runtimeCollection("user_notice");
 var playerID = Spark.getPlayer().getPlayerId();
 var playerData = playerCollection.findOne({"playerID":playerID});
+var lang = playerData.lang;
+if(!lang) lang = "en";
 var data = Spark.getData().data;
 if(!data) data = {};
 var timeNow = getTimeNow();
@@ -122,12 +124,12 @@ if (data.one_signal_player_id) {
 		playerCollection.update({"playerID":playerID}, {"$set":{"one_signal_player_id":data.userId}}, true, false);
 		response = {
 			"result"  : true,
-			"message" : "Update one signal player id success"
+			"message" : getTextTranslation("Update one signal player id success",lang);
 		}
 	} else {
 		response = {
 			"result"  : false,
-			"message" : "Update one signal player id failure"
+			"message" : getTextTranslation("Update one signal player id failure",lang);
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -145,12 +147,12 @@ if (data.change_user_name) {
 		});
 		response = {
 			"result": true,
-			"message": "Change name success!"
+			"message": getTextTranslation("Change name success!",lang);
 		}
 	} else {
 		response = {
 			"result": false,
-			"message": "User name must be not null"
+			"message": getTextTranslation("Your name must not be empty!",lang);
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -170,7 +172,7 @@ if (data.add_coin && data.number !== undefined) {
 	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin}});
 	response = {
 		"result":true,
-		"message": "You have got " + data.number + " coin!",
+		"message": getTextTranslation("You get ",lang) + data.number + " coin!",
 		"player_coin": playerData.player_coin
 	}
 	Spark.setScriptData("data", response);
@@ -189,7 +191,7 @@ if (data.add_card && data.card_id !== undefined && data.number !== undefined) {
     		playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData}});
     		response = {
     			"result":true,
-    			"message": "You have got " + data.number + " card!",
+    			"message": getTextTranslation("You get ",lang) + data.number + " card!",
     			"card_data": [
     				{
 	    				"card_id": cardData.card_id,
@@ -219,12 +221,12 @@ if (data.upgrade_card && data.card_id !== undefined) {
     			if (getCardNumberNeed(cardData.rarity, cardData.current_level + 1) > cardData.current_number) {
 	    			response = {
 	    				"result":false,
-	    				"message":"Can not enough card to upgrade this card!"
+	    				"message": getTextTranslation("Do not have enough card to upgrade this card!",lang)
 	    			}
 	    		} else if (getCardCoinNeed(cardData.rarity, cardData.current_level + 1) > playerCoin) {
 	    			response = {
 	    				"result":false,
-	    				"message":"Can not enough coin to upgrade this card!"
+	    				"message":getTextTranslation("Do not have enough coin to upgrade this card!",lang)
 	    			}
 	    		} else {
 	    				cardData.current_level = cardData.current_level + 1;
@@ -235,7 +237,7 @@ if (data.upgrade_card && data.card_id !== undefined) {
 	    				playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData, "player_coin":playerData.player_coin, "current_exp":playerData.current_exp, "current_level":levelInfo}});
 	    				response = {
 	    					"result":true,
-	    					"message":"Upgrade success!",
+	    					"message":getTextTranslation("Upgrade success!",lang),
 	    					"card_data":
 			    				{
 				    				"card_id": cardData.card_id,
@@ -254,7 +256,7 @@ if (data.upgrade_card && data.card_id !== undefined) {
     		} else {
     				response = {
     					"result":false,
-    					"message":"Your card is max level!"
+    					"message":getTextTranslation("Your card is max level!",lang)
     				}
     			}
     		break;
@@ -278,7 +280,7 @@ if (data.buy_item) {
 			playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level}}, true, false);
 			response = {
 				"result" : true,
-				"message" : "Buy success",
+				"message" : getTextTranslation("Buy success",lang),
 				"player_coin" : playerCoin,
 				"level_info" : levelInfo
 			};
@@ -286,7 +288,7 @@ if (data.buy_item) {
 			if (playerCoin < packItem.cost) {
 				response = {
 					"result" : false,
-					"message" : "Can't enough coin to buy"
+					"message" : getTextTranslation("Not enough coin to buy",lang)
 				};
 			} else {
 				playerCoin -= parseInt(packItem.cost);
@@ -297,7 +299,7 @@ if (data.buy_item) {
 				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "current_exp":playerExp, "current_level":levelInfo.level,"player_life":playerLife}}, true, false);
 				response = {
 					"result" : true,
-					"message" : "Buy success",
+					"message" : getTextTranslation("Buy success",lang),
 					"player_life" : playerLife,
 					"player_coin" : playerCoin,
 					"level_info" : levelInfo
@@ -307,7 +309,7 @@ if (data.buy_item) {
 			if (playerCoin < packItem.cost) {
 				response = {
 					"result" : false,
-					"message" : "Can't enough coin to buy"
+					"message" : getTextTranslation("Not enough coin to buy",lang)
 				};
 			} else {
 				playerCoin -= parseInt(packItem.cost);
@@ -316,7 +318,7 @@ if (data.buy_item) {
 				playerCollection.update({"playerID":playerID}, {"$set":{"player_coin":playerCoin, "player_bomb":playerBomb}}, true, false);
 				response = {
 					"result" : true,
-					"message" : "Buy success",
+					"message" : getTextTranslation("Buy success",lang),
 					"player_bomb" : playerBomb,
 					"player_coin" : playerCoin
 				};
@@ -325,7 +327,7 @@ if (data.buy_item) {
 	} else {
 		response = {
 			"result" : false,
-			"message" : "Not found this item"
+			"message" : getTextTranslation("Item not found",lang)
 		};
 	}
 	Spark.setScriptData("data", response);
@@ -346,12 +348,12 @@ if (data.buy_card) {
 		if (playerCoin < cost) {
 			response = {
 				"result" : false,
-				"message" : "Not enough coin to buy this card"
+				"message" : getTextTranslation("Not enough coin to buy this card",lang)
 			}
 		} else if (cardStore.number >= cardStore.max_number) {
 			response = {
 				"result" : false,
-				"message" : "Over number card can bought!"
+				"message" : getTextTranslation("Card is maximum!",lang)
 			}
 		} else {
 			playerCoin -= cost;
@@ -379,7 +381,7 @@ if (data.buy_card) {
 			}
 			response = {
 				"result" : true,
-				"message" : "Buy success",
+				"message" : getTextTranslation("Buy success",lang),
 				"card_store" : cardStore,
 				"card_player" : cardPlayer,
 				"player_coin" : playerCoin,
@@ -389,7 +391,7 @@ if (data.buy_card) {
 	} else {
 		response = {
 			"result" : "false",
-			"message" : "Not found card in store"
+			"message" : getTextTranslation("Not found card in store",lang)
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -397,8 +399,8 @@ if (data.buy_card) {
 
 //add feedback
 if (data.user_feedback) {
-	var title = data.title ? data.title : "User Feedback";
-	var content = data.content ? data.content : "No feedback from user!";
+	var title = data.title ? data.title : getTextTranslation("User Feedback",lang);
+	var content = data.content ? data.content : getTextTranslation("No feedback from user!",lang);
 	var feedback = {
 		"playerID": playerID,
 		"title"   : title,
@@ -408,7 +410,7 @@ if (data.user_feedback) {
 	userFeedbackData.insert(feedback);
 	var response = {
 		"result"   : true,
-		"message"  : "Your feedback was sent!",
+		"message"  : getTextTranslation("Your feedback was sent!",lang),
 		"feedback" : feedback
 	}
 	var userName = playerData.userName ? playerData.userName : "UserFeedback";
@@ -464,12 +466,12 @@ if (data.response_feedback) {
 		userFeedbackData.update({"_id":{$oid:feedbackID}}, {"$set":saveData}, true, false);
 		response = {
 			"result" : true,
-			"message": "Response success!"
+			"message": getTextTranslation("Response success!",lang)
 		}
 	} else {
 		response = {
 			"result"  : false,
-			"message" : "Response failure!"
+			"message" : getTextTranslation("Response failure!",lang)
 		}
 	}
 	Spark.setScriptData("data",response);
@@ -489,7 +491,7 @@ if (data.add_notice) {
 	userNotice.insert(notice);
 	var response = {
 		"result"  : true,
-		"message" : "Add notice success!",
+		"message" : getTextTranslation("Add notice success!",lang),
 		"notice"  : notice
 	}
 	if (playerID == "all") {
@@ -536,12 +538,12 @@ if (data.open_chest) {
 			if (timeNow - chest.time_open >= chest.time_out) {
 				response = {
 					"result" : false,
-					"message" : "This chest opened. Can't open again!"
+					"message" : getTextTranslation("This chest opened. Can't open again!",lang)
 				}
 			} else if (chestOpening) {
 				response = {
 					"result" : false,
-					"message" : "Other chest is opening."
+					"message" : getTextTranslation("Other chest is opening.",lang)
 				}
 			} else {
 				chest.time_open = timeNow;
@@ -549,19 +551,19 @@ if (data.open_chest) {
 				playerCollection.update({"playerID":playerID},{"$set":{"chest_data":playerData.chest_data}}, true, false);
 				response = {
 					"result" : true,
-					"message" : "Chest " + chest_id + " is opening."
+					"message" : getTextTranslation("Chest " + chest_id + " is opening.",lang)
 				}
 			}
 		} else {
 			response = {
 				"result" : false,
-				"message" : "Can't found chest"
+				"message" : getTextTranslation("Can't found chest",lang)
 			}
 		}
 	} else {
 		response = {
 			"result" : false,
-			"message" : "Can't found chest"
+			"message" : getTextTranslation("Can't found chest",lang)
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -579,13 +581,13 @@ if (data.claim_chest) {
 			if (chestStatus.status == server_config.chest_status.locked.status && !useCoin) {
 				response = {
 					"result" : false,
-					"message" : "This chest is locked!"
+					"message" : getTextTranslation("This chest is locked!",lang)
 				}
 			} else if (chestStatus.status == server_config.chest_status.opened.status) {
 				var listCardResult = _claimChest(chest);
 				response = {
 					"result" : true,
-					"message" : "Claim chest success",
+					"message" : getTextTranslation("Claim chest success",lang),
 					"list_card":listCardResult
 				}
 			} else {
@@ -596,14 +598,14 @@ if (data.claim_chest) {
 					if (playerData.player_coin < coinNeed) {
 						response = {
 							"result" : false,
-							"message" : "Not enough coin to open this chest!"
+							"message" : getTextTranslation("Not enough coin to open this chest!",lang)
 						}
 					} else {
 						playerData.player_coin = playerData.player_coin - coinNeed;
 						var listCardResult = _claimChest(chest);
 						response = {
 							"result" : true,
-							"message": "Claim chest by coin success",
+							"message": getTextTranslation("Claim chest by coin success",lang),
 							"list_card": listCardResult,
 							"player_coin": playerData.player_coin
 						}
@@ -611,20 +613,20 @@ if (data.claim_chest) {
 				} else {
 					response = {
 						"result" : false,
-						"message" : "This chest is opening, please wait!"
+						"message" : getTextTranslation("This chest is opening, please wait!",lang)
 					}
 				}
 			}
 		} else {
 			response = {
 				"result" : false,
-				"message" : "Can't found chest"
+				"message" : getTextTranslation("Can't found chest",lang)
 			}
 		}
 	} else {
 		response = {
 			"result" : false,
-			"message" : "Can't found chest"
+			"message" : getTextTranslation("Can't found chest",lang)
 		}
 	}
 	Spark.setScriptData("data", response);
@@ -647,7 +649,7 @@ if (data.get_chest_data) {
 	}
 	response = {
 		"result": true,
-		"message": "Get chest data success!",
+		"message": getTextTranslation("Get chest data success!",lang),
 		"chest_data" : chestData
 	}
 	Spark.setScriptData("data", response);
@@ -695,7 +697,7 @@ if (data.get_chest_data_to_open_now) {
 	var chestData = player ? player.chest_data : undefined;
 	var response = {
 		"result": false,
-		"message": "Can not found this chest"
+		"message": getTextTranslation("Can not found this chest",lang)
 	}
 	if (chestData) {
 		var chest = chestData["chest"+chestID];
@@ -705,7 +707,7 @@ if (data.get_chest_data_to_open_now) {
 		    var coinNeed = getCoinNeedToOpenChest(timeRemain);
 		    response = {
 		    	"result": true,
-		    	"message": "Get coin need to open chest success",
+		    	"message": getTextTranslation("Get coin need to open chest success",lang),
 		    	"coin_need": coinNeed,
 		    	"time_remain": timeRemain
 		    }
@@ -802,7 +804,7 @@ if (data.debug_add_card) {
     playerCollection.update({"playerID":playerID},{"$set":{"card_data":playerCardData}});
     response = {
     	"result":true,
-    	"message": "You have got " + number + " card for each kind!",
+    	"message": getTextTranslation("You have got " + number + " card for each kind!",lang),
   		"card_data": getListCardFull(playerCardData,playerData.lang)
   	}
 
@@ -819,7 +821,7 @@ if (data.debug_reset_card) {
 	playerCollection.update({"playerID":playerID},{"$set":{"card_data":cardData}});
 	var response = {
     	"result":true,
-    	"message": "Reset card success",
+    	"message": getTextTranslation("Reset card success",lang),
   		"card_data": getListCardFull(cardData,playerData.lang)
   	}
 	Spark.setScriptData("data", response);
@@ -1044,11 +1046,11 @@ function _claimChest(chest) {
 			cardPlayer = cardMaster.findOne({"card_id":card.card_id},{"card_score":0,"card_energy":0,"description":false});
 			cardPlayer.current_level = 1;
 			cardPlayer.current_number = card.current_number;
-			cardPlayer = getCardFull(cardPlayer,playerData.lang);
 			var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 			listPlayerCard.push(cardPlayer);
 			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard},"$unset":{"chest_data":{chestKey:""}}}, true, false);
 		}
+		cardPlayer = getCardFull(cardPlayer,playerData.lang);
 		cardPlayer.added_number = card.current_number;
 		listCardResult.push(cardPlayer);
 	});
