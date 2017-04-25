@@ -3,7 +3,10 @@ require("common");
 require("translate_text");
 require("GameString");
 
-var playerID = Spark.getPlayer().getPlayerId();
+var playerID ="";
+if( Spark.getPlayer()){
+    playerID =  Spark.getPlayer().getPlayerId();
+}
 var currentPlayer = playerCollection.findOne({"playerID": playerID});
 var currentServerPlayer = playerServerCollection.findOne({"playerID": playerID});
 

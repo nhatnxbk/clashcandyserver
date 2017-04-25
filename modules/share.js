@@ -78,6 +78,11 @@ CONFIG.ccnrc = card_coin_need_rarity_common;
 CONFIG.ccnrr = card_coin_need_rarity_rare;
 CONFIG.ccnre = card_coin_need_rarity_epic;
 
+client_config.random_min_time = 10;
+client_config.random_max_time = 100;
+client_config.max_time_bot_eat = 20;
+client_config.bot_time_tranfer = 0.4;
+client_config.bot_time_start_game = 1;
 function getTimeNow() {
 	return Date.now() + OFFSET_TIME;
 }

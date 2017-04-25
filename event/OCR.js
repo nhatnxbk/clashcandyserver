@@ -316,8 +316,8 @@ function remove_room () {
 
 function get_current_rank_with_friends() {
 	var currentPlayer = playerDataList.findOne({"playerID": playerID});
-	var friendList = (currentPlayer && currentPlayer.facebook_friend  && currentPlayer.facebook_friend.length > 0) ? currentPlayer.facebook_friend : "";
-	var friendListArr = friendList ? JSON.parse(friendList) : [];
+	var friendList = (currentPlayer && currentPlayer.facebook_friend  && currentPlayer.facebook_friend.length > 0) ? currentPlayer.facebook_friend : [];
+	var friendListArr = friendList;
 	var myFBId = currentPlayer && currentPlayer.facebook_id ? currentPlayer.facebook_id : "";
 	var playerList = playerDataList.find({"$or":[{"facebook_id":{"$exists":true,"$ne":"","$in":friendListArr}},{"facebook_id":myFBId}],"trophies":{"$ne":null}}).sort({"trophies":-1}).limit(100).toArray();
 	var rank = 0;
@@ -351,8 +351,8 @@ function get_level_data(level){
 
 function get_bot_player_data(isEvent) {
 	var currentPlayerData = playerDataList.findOne({"playerID": playerID});
-	var friendList = (currentPlayerData && currentPlayerData.facebook_friend && currentPlayerData.facebook_friend.length > 0) ? currentPlayerData.facebook_friend : "";
-	var friendListArr = friendList ? JSON.parse(friendList) : [];
+    var friendList = (currentPlayer && currentPlayer.facebook_friend  && currentPlayer.facebook_friend.length > 0) ? currentPlayer.facebook_friend : [];
+	var friendListArr = friendList;
 	var onlineMatchList = Spark.runtimeCollection("OnlineMatch");
 	var online_match_data = onlineMatchList.findOne({"playerID":playerID});
 	var list_ignore = online_match_data && online_match_data.list_ignore ? online_match_data.list_ignore : [];

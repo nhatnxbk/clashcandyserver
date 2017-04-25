@@ -1,14 +1,18 @@
 var NORMAL_LEVEL = [25,28,29,30,32,33,34,35,36,37,38,45];
 
 var playerCount = 0;
+var matchInfo = {};
 RTSession.onPlayerConnect(function(player){
+    RTSession.getLogger().debug("Co player join phong");
     if(++playerCount == 2){
         RTSession.getLogger().debug("2 player deu join phong " + new Date().toLocaleDateString() + " " + new Date().toLocaleTimeString());
         var data = RTSession.newData();
         var randomSeed = parseInt(Math.random() * 1000000);
         var level = NORMAL_LEVEL[parseInt(Math.random()* NORMAL_LEVEL.length)];
+        matchInfo.randomSeed = randomSeed;
+        matchInfo.level = level;
         data.setNumber(1, randomSeed);
-        data.setNumber(2, parseInt(Math.random() * 99));
+        data.setNumber(2, level);
         var request = RTSession.newRequest()
         .createLogEventRequest()
         .setEventKey("OCR");
@@ -17,11 +21,24 @@ RTSession.onPlayerConnect(function(player){
             .send(function(response){
                 RTSession.getLogger().debug("Nhan duoc goi tin lay thong tin level " +level+" " + JSON.stringify(response.scriptData));
                 if(response.scriptData.data){
-                    data.setString(3, response.scriptData.data.data);
+                        data.setString(3, response.scriptData.data.data);
+                        matchInfo.data = response.scriptData.data.data;
                 }
                 RTSession.newPacket().setReliable(true).setOpCode(100).setData(data).send();
+                var intervalCheck = RTSession.setInterval(function(){
+                    if(startMapCount < 2){
+                        RTSession.getLogger().debug("Gui lai goi tin thong tin tran dau ve client " + JSON.stringify(matchInfo) + " match count " + startMapCount);
+                        var data = RTSession.newData();
+                        data.setNumber(1, matchInfo.randomSeed);
+                        data.setNumber(2, matchInfo.level);
+                        data.setString(3, matchInfo.data);
+                        RTSession.newPacket().setReliable(true).setOpCode(100).setData(data).send();
+                    }else{
+                        RTSession.clearInterval(intervalCheck);
+                    }
+                }, 1000);
+                
             });
-        
     }
     var playerPeerId = player.getPeerId(); // gets sender's peerID
     var playerPlayerId = player.getPlayerId(); // gets sender's playerID
@@ -118,3 +135,10 @@ RTSession.onPacket(4, function(packet){
         return false;
     }
 });
+
+//Ping request
+RTSession.onPacket(5, function(packet){
+    var data = RTSession.newData();
+    RTSession.newPacket().setReliable(true).setOpCode(5).setSender(packet.getSender().getPeerId()).setData(data).send();
+});
+

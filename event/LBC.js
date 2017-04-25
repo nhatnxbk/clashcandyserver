@@ -28,8 +28,8 @@ if (data.leader_board_type == LEADER_BOARD_BY_COUNTRY) {
 
 if (data.leader_board_type == LEADER_BOARD_BY_FRIENDS) {
 	//leader board by friends
-	var friendList = (currentPlayer && currentPlayer.facebook_friend  && currentPlayer.facebook_friend.length > 0) ? currentPlayer.facebook_friend : "";
-	var friendListArr = friendList ? JSON.parse(friendList) : [];
+	var friendList = (currentPlayer && currentPlayer.facebook_friend  && currentPlayer.facebook_friend.length > 0) ? currentPlayer.facebook_friend : [];
+	var friendListArr = friendList;
 	var myFBId = currentPlayer && currentPlayer.facebook_id ? currentPlayer.facebook_id : "";
 	var playerList = playerData.find({"$or":[{"facebook_id":{"$ne":"","$in":friendListArr}},{"facebook_id":myFBId}],"trophies":{"$ne":null}}).sort({"trophies":-1}).limit(100).toArray();
 	var listRank = [];
@@ -52,7 +52,7 @@ if (data.leader_board_type == LEADER_BOARD_BY_FRIENDS) {
 	}
 	if (!myPlayerRank) {
 		myPlayerRank = {
-			"rank"     : listRank.length > 0 ? 101 : 1,
+			"rank"     : listRank.length > 0 ? (listRank.length +1) : 1,
 			"trophies" : currentPlayer && currentPlayer.trophies ? currentPlayer.trophies : 0,
 			"userName" : currentPlayer && currentPlayer.userName ? currentPlayer.userName : "You",
 			"userId"   : currentPlayer && currentPlayer.playerID ? currentPlayer.playerID : 0,

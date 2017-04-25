@@ -13,6 +13,41 @@ var data = Spark.getData().data;
 if(!data) data = {};
 var timeNow = getTimeNow();
 
+if(data.claim_reward){
+    var id = data.id;
+    var message_id = data.message_id;
+    var reward = Spark.runtimeCollection("user_facebook_reward").findOne({"_id":{$oid : id}});
+    if(reward){
+        if(!reward.claim){
+            reward.claim = true;
+            playerData.player_coin = playerData.player_coin + reward.coin;
+	        playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin}});
+            Spark.runtimeCollection("user_facebook_reward").update({"_id":{$oid : id}}, reward,true,false);
+            userNotice.remove({"_id":{$oid:message_id}})
+            response = {
+        		"result": true,
+        		"message": getTextTranslation("You get ",lang) + reward.coin + " coin!",
+        		"player_coin": playerData.player_coin,
+        	}
+        }else{
+            response = {
+        		"result": false,
+        		"message": getTextTranslation("Reward was claimed!",lang),
+        	}
+        }
+    }else{
+        response = {
+    		"result": false,
+    		"message": getTextTranslation("Reward do not exist!",lang),
+    	}
+    }
+    Spark.setScriptData("data", response);
+}
+
+if(data.log_facebook_invite){
+    Spark.runtimeCollection("user_facebook_invite").insert({"playerID":playerID,"friends":data.friends})
+}
+
 if(data.get_lang_list){
     Spark.setScriptData("lang_list", getLangList());
     Spark.setScriptData("my_lang", playerData.lang ? playerData.lang : "en");
@@ -108,7 +143,31 @@ if (data.update_player_data) {
 		updatePlayerData.facebook_id = data.facebook_id;
 	}
 	if (data.facebook_friend) {
-		updatePlayerData.facebook_friend = data.facebook_friend;
+	    if(!updatePlayerData.facebook_friend) updatePlayerData.facebook_friend = [];
+	    if(updatePlayerData.facebook_friend.length < data.facebook_friend.length){
+	        var new_list = [];
+	        for(var i in data.facebook_friend){
+	            if(updatePlayerData.facebook_friend.indexOf(data.facebook_friend[i]) < 0){
+	                new_list.push(data.facebook_friend[i]);
+	            }
+	        }
+            var coin = (new_list.length * 100);
+    	    var insert_reward = {"coin": coin,"playerID":playerID,"claim":false,"new_friend":new_list};
+    	    Spark.runtimeCollection("user_facebook_reward").insert(insert_reward);
+    	    var title = {"en": getTextTranslation("Reward",lang)};
+        	var content = {"en" : getTextTranslation("You receive " ,lang)+" " + coin + " coins. " +getTextTranslation( "Because of inviting facebook friend success!" ,lang)};
+        	var notice = {
+        		"playerID": playerID,
+        		"title"   : title,
+        		"message" : content,
+        		"action"  : "claim_coin",
+        		"button_name"  : getTextTranslation("Claim",lang),
+        		"reward_id": insert_reward._id.$oid,
+        		"time"    : timeNow
+        	}
+        	userNotice.insert(notice);
+	    }
+	    updatePlayerData.facebook_friend = data.facebook_friend;
 	}
 	if (data.game_tutorial_step) {
 	    updatePlayerData.game_tutorial_step = data.game_tutorial_step;
