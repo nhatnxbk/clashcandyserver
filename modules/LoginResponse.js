@@ -65,6 +65,12 @@ if(!currentPlayer.userName && currentPlayer.facebook_name){
       "@class" : ".ChangeUserDetailsRequest",
       "displayName" : currentPlayer.facebook_name
     });
+} else if (currentPlayer.userName) {
+    Spark.sendRequest(
+      {
+        "@class" : ".ChangeUserDetailsRequest",
+        "displayName" : currentPlayer.userName
+      });
 }
 var timeDelta = timeNow - time_fb_invite;
 if(timeDelta < TIME_FB_INVITE){
