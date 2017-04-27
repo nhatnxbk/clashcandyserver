@@ -1094,25 +1094,28 @@ function _claimChest(chest) {
 	var listCardResult = [];
 	var cardArr = chest.card;
 	var chestData = playerData.chest_data;
-	delete chestData["chest"+chest.chest_id];
-	cardArr.forEach(function(card) {
-		var cardPlayer = getCardPlayer(playerID, card.card_id);
-		if (cardPlayer) {
-			cardPlayer.current_number += card.current_number;
-			playerCollection.update({"$and":[{"playerID":playerID},{"card_data.card_id":cardPlayer.card_id}]},
-			{"$set":{"card_data.$.current_number": cardPlayer.current_number, "chest_data":chestData}}, true, false);
-		} else {
+	var listPlayerCard = playerData.card_data ? playerData.card_data : [];
+	for (var j = 0 ; j < cardArr.length; j++) {
+		var card = cardArr[j];
+		var cardPlayer = undefined;
+		for (var i = 0; i < listPlayerCard.length; i++) {
+			if (listPlayerCard[i].card_id == card.card_id) {
+				cardPlayer = listPlayerCard[i];
+				cardPlayer.current_number += card.current_number;
+				break;
+			}
+		}
+		if (cardPlayer == undefined) {
 			cardPlayer = cardMaster.findOne({"card_id":card.card_id},{"card_score":0,"card_energy":0,"description":false});
 			cardPlayer.current_level = 1;
 			cardPlayer.current_number = card.current_number;
-			var listPlayerCard = playerData.card_data ? playerData.card_data : [];
 			listPlayerCard.push(cardPlayer);
-			playerCollection.update({"playerID":playerID},{"$set":{"card_data":listPlayerCard},"$unset":{"chest_data":{chestKey:""}}}, true, false);
 		}
 		cardPlayer = getCardFull(cardPlayer,playerData.lang);
 		cardPlayer.added_number = card.current_number;
 		listCardResult.push(cardPlayer);
-	});
-	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin}}, true, false);
+	}
+	delete chestData["chest"+chest.chest_id];
+	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin,"card_data":listPlayerCard,"chest_data":chestData}}, true, false);
 	return listCardResult;
 }
