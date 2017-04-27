@@ -780,6 +780,11 @@ if(data.debug_some_thing){
     Spark.setScriptData("data", getGameString("vi"));
 }
 
+if (data.debug_clear_cache) {
+    Spark.getCache().removeAll();
+    Spark.setScriptData("data", {"result":true, "message": "Clear cache success"});
+}
+
 if(data.debug_test_unity_ads_api){
     var list = JSON.parse(csvJSON(GetUnityAdsToday()));
     var text = "";

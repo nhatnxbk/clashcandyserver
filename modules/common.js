@@ -35,32 +35,84 @@ function SendNewNotification(include_player_ids, included_segments, excluded_seg
   return promise;
 }
 
+// level master
+function getLevelMaster() {
+	var levelMasterData = Spark.getCache().get("level_master");
+	if (!levelMasterData) {
+		levelMasterData = levelMaster.find().sort({"level":1}).toArray();
+		Spark.getCache().put("level_master", levelMasterData);
+	}
+	return levelMasterData;
+}
+
 function getPlayerLevelInfo(playerID) {
 	var levelInfo = {};
 	var playerData = playerCollection.findOne({"playerID":playerID});
+	var levelMasterData = getLevelMaster();
 	if(playerData == null) playerData = {};
 	var currentExp = playerData.current_exp ? playerData.current_exp : 0;
-	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
-	if (levelArr.length > 0) {
-	  var nextLevel = levelArr[0];
-	  levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
-	  levelInfo.current_exp = currentExp;
-	  levelInfo.next_exp = nextLevel.exp;
+	for (var i = 0 ; i < levelMasterData.length; i++) {
+		if (currentExp < levelMasterData[i].exp) {
+			var nextLevel = levelMasterData[i];
+			var currentLevel = levelMasterData[i - 1];
+			levelInfo.level = currentLevel.level;
+			levelInfo.current_exp = currentExp - currentLevel.exp;
+			levelInfo.next_exp = nextLevel.exp - currentLevel.exp;
+			return levelInfo;
+		}
+	}
+	// var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
+	// if (levelArr.length > 0) {
+	//   var nextLevel = levelArr[0];
+	//   levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
+	//   levelInfo.current_exp = currentExp;
+	//   levelInfo.next_exp = nextLevel.exp;
+	// }
+	return levelInfo;
+}
+
+// function getPlayerLevelInfo(playerID) {
+// 	var levelInfo = {};
+// 	var playerData = playerCollection.findOne({"playerID":playerID});
+// 	if(playerData == null) playerData = {};
+// 	var currentExp = playerData.current_exp ? playerData.current_exp : 0;
+// 	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
+// 	if (levelArr.length > 0) {
+// 	  var nextLevel = levelArr[0];
+// 	  levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
+// 	  levelInfo.current_exp = currentExp;
+// 	  levelInfo.next_exp = nextLevel.exp;
+// 	}
+// 	return levelInfo;
+// }
+
+function getPlayerLevelInfoByExp(currentExp) {
+	var levelInfo = {};
+	var levelMasterData = getLevelMaster();
+	for (var i = 0 ; i < levelMasterData.length; i++) {
+		if (currentExp < levelMasterData[i].exp) {
+			var nextLevel = levelMasterData[i];
+			var currentLevel = levelMasterData[i - 1];
+			levelInfo.level = currentLevel.level;
+			levelInfo.current_exp = currentExp - currentLevel.exp;
+			levelInfo.next_exp = nextLevel.exp - currentLevel.exp;
+			return levelInfo;
+		}
 	}
 	return levelInfo;
 }
 
-function getPlayerLevelInfoByExp(currentExp) {
-	var levelInfo = {};
-	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
-	if (levelArr.length > 0) {
-	  var nextLevel = levelArr[0];
-	  levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
-	  levelInfo.current_exp = currentExp;
-	  levelInfo.next_exp = nextLevel.exp;
-	}
-	return levelInfo;
-}
+// function getPlayerLevelInfoByExp(currentExp) {
+// 	var levelInfo = {};
+// 	var levelArr = levelMaster.find({"exp":{"$gt":currentExp}}).sort({"level":1}).toArray();
+// 	if (levelArr.length > 0) {
+// 	  var nextLevel = levelArr[0];
+// 	  levelInfo.level = nextLevel.level > 1 ? nextLevel.level - 1 : 1;
+// 	  levelInfo.current_exp = currentExp;
+// 	  levelInfo.next_exp = nextLevel.exp;
+// 	}
+// 	return levelInfo;
+// }
 
 function getStoreInfo(playerID) {
 	var storeInfo = {};
@@ -136,7 +188,7 @@ function getCardFull(card,lang) {
 	card.next_energy = getCardEnergy(card, card.next_level);
 	card.next_number = getCardNumberNeed(card.rarity, card.next_level);
 	card.coin_need = getCardCoinNeed(card.rarity, card.next_level);
-	var cardInfo = getCardFromCache(card.card_id);
+	var cardInfo = getCardMasterByID(card.card_id);
 	if(lang && lang != "en" &&cardInfo.description){
 	    card.description = getTextTranslation(cardInfo.description,lang);
 	}else if(card.description){
@@ -168,6 +220,15 @@ function getCardPlayer(playerID, cardID) {
 	}
 	return undefined;
 }
+// card master
+function getAllCardMaster() {
+	var listCards = Spark.getCache().get("card_master");
+	if (!listCards) {
+		listCards = cardMaster.find().toArray();
+		Spark.getCache().put("card_master", listCards);
+	}
+	return listCards;
+}
 
 function getCardFromCache(cardId){
     var card = Spark.getCache().get("card_" + cardId);
@@ -178,8 +239,37 @@ function getCardFromCache(cardId){
     return card;
 }
 
+function getCardMasterByID(cardId) {
+	var listCardMaster = getAllCardMaster();
+	if (!listCardMaster) {
+		Spark.getLog().error("Khong tim thay list card master");
+        return undefined;
+	}
+	for (var i = 0; i < listCardMaster.length; i++) {
+		if (listCardMaster[i].card_id == cardId) {
+			return listCardMaster[i];
+		}
+	}
+	return undefined;
+}
+
+function getCardMasterByRarity(rarity) {
+	var listCardMaster = getAllCardMaster();
+	var listCardResult = [];
+	if (!listCardMaster) {
+		Spark.getLog().error("Khong tim thay list card master");
+        return listCardResult;
+	}
+	for (var i = 0; i < listCardMaster.length; i++) {
+		if (listCardMaster[i].rarity == rarity) {
+			listCardResult.push(listCardMaster[i]);
+		}
+	}
+	return listCardResult;
+}
+
 function getCardScore(card, level) {
-    var cardInfo = getCardFromCache(card.card_id);
+    var cardInfo = getCardMasterByID(card.card_id);
     if(!cardInfo){
         Spark.getLog().error("Khong tim thay card trong card master id " + card.card_id);
         return 0;
@@ -188,7 +278,7 @@ function getCardScore(card, level) {
 }
 
 function getCardEnergy(card, level) {
-    var cardInfo = getCardFromCache(card.card_id);
+    var cardInfo = getCardMasterByID(card.card_id);
     if(!cardInfo){
         Spark.getLog().error("Khong tim thay card trong card master id " + card.card_id);
         return 100;
@@ -295,7 +385,11 @@ function getChestDataMasterByProbability(probability) {
 }
 
 function getChestDataMasterByType(type) {
-	var chestDataMaster = chestMaster.findOne({"type":type});
+	var chestDataMaster = Spark.getCache().get("chest_type_" + type);
+    if (!chestDataMaster) {
+        chestDataMaster = chestMaster.findOne({"type":type});
+        Spark.getCache().put("chest_type_" + type, chestDataMaster);
+    }
 	return chestDataMaster;
 }
 
@@ -304,12 +398,11 @@ function getChestData(chestDataMaster) {
 	var chestData;
 	var listCard = [];
 	var listCardID = [];
-	// var listCardRarity = [];
 	var totalNumberCard = 0;
 	while(totalNumberCard < chestDataMaster.number_card) {
 		var cardResult = {};
 		var cardRewardMaster = getCardByProbability(chestDataMaster.card);
-		var listCardMaster = cardMaster.find({"rarity":cardRewardMaster.rarity},{"card_score":0,"card_energy":0,"description":false}).toArray();
+		var listCardMaster = getCardMasterByRarity(cardRewardMaster.rarity);
 		var idx = Math.floor(Math.random() * listCardMaster.length);
 		var card = listCardMaster[idx];
 		if (listCardID.indexOf(card.card_id) != -1) {
