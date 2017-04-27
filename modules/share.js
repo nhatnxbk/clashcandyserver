@@ -77,6 +77,7 @@ CONFIG.cnnre = card_number_need_rarity_epic;
 CONFIG.ccnrc = card_coin_need_rarity_common;
 CONFIG.ccnrr = card_coin_need_rarity_rare;
 CONFIG.ccnre = card_coin_need_rarity_epic;
+CONFIG.coin_need_open_chest_per_seconds = client_config.coin_need_open_chest_per_seconds;
 
 client_config.random_min_time = 10;
 client_config.random_max_time = 100;
