@@ -399,19 +399,28 @@ function getChestData(chestDataMaster) {
 	var listCard = [];
 	var listCardID = [];
 	var totalNumberCard = 0;
+	var totalNumberCardByRarity = {
+		"1": 0,
+		"2": 0,
+		"3": 0
+	};
 	while(totalNumberCard < chestDataMaster.number_card) {
 		var cardResult = {};
 		var cardRewardMaster = getCardByProbability(chestDataMaster.card);
+		if (totalNumberCardByRarity[cardRewardMaster.rarity] >= cardRewardMaster.number_card_max) {
+			continue;
+		}
 		var listCardMaster = getCardMasterByRarity(cardRewardMaster.rarity);
 		var idx = Math.floor(Math.random() * listCardMaster.length);
 		var card = listCardMaster[idx];
 		if (listCardID.indexOf(card.card_id) != -1) {
 			continue;
 		}
-		var number = Math.ceil(Math.random() * cardRewardMaster.number_card_max);
+		var number = Math.ceil(Math.random() * (cardRewardMaster.number_card_max - totalNumberCardByRarity[cardRewardMaster.rarity]));
 		if (totalNumberCard + number > chestDataMaster.number_card) {
 			number = chestDataMaster.number_card - totalNumberCard;
 		}
+		totalNumberCardByRarity[cardRewardMaster.rarity] = totalNumberCardByRarity[cardRewardMaster.rarity] + number;
 		card.current_level = 1;
 		card.current_number = number;
 		card = getCardFull(card);
