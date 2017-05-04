@@ -169,8 +169,11 @@ if (data.update_player_data) {
 	    }
 	    updatePlayerData.facebook_friend = data.facebook_friend;
 	}
-	if (data.game_tutorial_step) {
+	if (data.game_tutorial_step != undefined) {
 	    updatePlayerData.game_tutorial_step = data.game_tutorial_step;
+	}
+	if (data.game_tutorial_sub_step != undefined) {
+	    updatePlayerData.game_tutorial_sub_step = data.game_tutorial_sub_step;
 	}
 	playerCollection.update({"playerID":updatePlayerID},{"$set":updatePlayerData}, true, false);
 	Spark.setScriptData("data", {"result":true});
