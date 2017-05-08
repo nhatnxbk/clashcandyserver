@@ -10,6 +10,7 @@ var storeMaster = Spark.metaCollection("store_master");
 var storeDaily = Spark.runtimeCollection("store_daily");
 var cardMaster = Spark.metaCollection("card_master");
 var chestMaster = Spark.metaCollection("chest_master");
+var userClaimChestLog = Spark.runtimeCollection("user_claim_chest_log");
 var timeNow = getTimeNow();
 
 function SendNewNotification(include_player_ids, included_segments, excluded_segments, title, message, data) {

@@ -1128,5 +1128,11 @@ function _claimChest(chest) {
 	}
 	delete chestData["chest"+chest.chest_id];
 	playerCollection.update({"playerID":playerID},{"$set":{"player_coin":playerData.player_coin,"card_data":listPlayerCard,"chest_data":chestData}}, true, false);
+	var claimChestLog = {
+		"playerID": playerID,
+		"reg_date": timeNow,
+		"list_card": listCardResult
+	}
+	userClaimChestLog.insert(claimChestLog);
 	return listCardResult;
 }
