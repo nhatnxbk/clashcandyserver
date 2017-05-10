@@ -781,6 +781,12 @@ if (data.get_chest_data_to_open_now) {
 	Spark.setScriptData("data", response);
 }
 
+if (data.get_game_string) {
+	var lang = playerData.lang ? playerData.lang : "en";
+	var gameString = getGameString(lang);
+	Spark.setScriptData("string_list", gameString);
+}
+
 //=====================RQ debug======================//
 if(data.debug_some_thing){
     Spark.setScriptData("data", getGameString("vi"));
