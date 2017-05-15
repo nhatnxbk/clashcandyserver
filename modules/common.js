@@ -11,6 +11,7 @@ var storeDaily = Spark.runtimeCollection("store_daily");
 var cardMaster = Spark.metaCollection("card_master");
 var chestMaster = Spark.metaCollection("chest_master");
 var userClaimChestLog = Spark.runtimeCollection("user_claim_chest_log");
+var userReceivedChestLog = Spark.runtimeCollection("user_received_chest_log");
 var timeNow = getTimeNow();
 
 function SendNewNotification(include_player_ids, included_segments, excluded_segments, title, message, data) {
@@ -496,6 +497,7 @@ function addChestToPlayerAfterBattle(playerData, chestType) {
 			"type" 		 : chestData.type,
 			"chest_data" : chestData
 		}
+		logUserReceivedChest(playerID, chestData);
 	} else if (!playerData.chest_data.chest2) {
 		chestData.chest_id = 2;
 		playerData.chest_data.chest2 = chestData;
@@ -506,6 +508,7 @@ function addChestToPlayerAfterBattle(playerData, chestType) {
 			"type" 		 : chestData.type,
 			"chest_data" : chestData
 		}
+		logUserReceivedChest(playerID, chestData);
 	} else if (!playerData.chest_data.chest3) {
 		chestData.chest_id = 3;
 		playerData.chest_data.chest3 = chestData;
@@ -516,6 +519,7 @@ function addChestToPlayerAfterBattle(playerData, chestType) {
 			"type" 		 : chestData.type,
 			"chest_data" : chestData
 		}
+		logUserReceivedChest(playerID, chestData);
 	} else if (!playerData.chest_data.chest4) {
 		chestData.chest_id = 4;
 		playerData.chest_data.chest4 = chestData;
@@ -526,6 +530,7 @@ function addChestToPlayerAfterBattle(playerData, chestType) {
 			"type" 		 : chestData.type,
 			"chest_data" : chestData
 		}
+		logUserReceivedChest(playerID, chestData);
 	} else {
 		result = {
 			"result": true,
@@ -537,6 +542,15 @@ function addChestToPlayerAfterBattle(playerData, chestType) {
 		"data": result,
 		"player_data": playerData
 	};
+}
+
+function logUserReceivedChest(playerID, chest) {
+	var logData = {
+		"playerID": playerID,
+		"chest": chest,
+		"reg_date": timeNow
+	}
+	userReceivedChestLog.insert(logData);
 }
 
 function getCoinNeedToOpenChest(timeRemain) {
