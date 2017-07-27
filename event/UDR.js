@@ -67,7 +67,7 @@ if(data.get_translate_data){
         case "tutorial_game_1":
             response.text1 = [
                 getTextTranslation("Hello. My name is Ariel. I will be your guide.",lang),
-                getTextTranslation("Welcome to the ocean world. It's not peaceful. We must fight to live.",lang),
+                getTextTranslation("Welcome to the Ocean world. It's not peaceful. We must fight to live.",lang),
                 getTextTranslation("Defeat your enemy to get reward. Now is battle.",lang)
             ];
             response.text2 = [
@@ -77,56 +77,56 @@ if(data.get_translate_data){
                 getTextTranslation("Who have higher score will win.",lang),
                 getTextTranslation("In the bottom is timer. If time runs out, game will end.",lang),
                 getTextTranslation("Next is your deck. Each card has energy. When mana is enough, card will be active.",lang),
-                getTextTranslation("You can only eat the sea creatures that matches the active card. If you eat, that card will disappear.",lang),
-                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+                getTextTranslation("You can only eat the sea animals that match the active Cards. If you eat, that Card will disappear.",lang),
+                getTextTranslation("Oh, Enemy starts moving. Defeat him now!",lang)
             ];
             break;
         case "tutorial_game_two_target":
             response.text1 = [
-                getTextTranslation("In this game, you and enemy have different target.",lang),
-                getTextTranslation("You must eat your target as soon as possible",lang),
-                getTextTranslation("Remember do not eat enemy target.",lang),
+                getTextTranslation("In this game, you and enemy have different targets.",lang),
+                getTextTranslation("You must eat your target as fast as possible",lang),
+                getTextTranslation("Remember: Do not eat enemy target!",lang),
             ];
             response.text2 = [
                 getTextTranslation("This is your target.",lang),
                 getTextTranslation("This is enemy's target.",lang),
-                getTextTranslation("Touch in card that you do not use to make it disappear.",lang),
-                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+                getTextTranslation("Tap the card that you don't use to make it disappeared.",lang),
+                getTextTranslation("Oh, Enemy starts moving. Defeat him now!",lang)
             ];
             break;
          case "tutorial_game_target_ingredient":
             response.text1 = [
-                getTextTranslation("In this game, you and enemy have different target.",lang),
-                getTextTranslation("You must move your target down to the bottom as soon as possible",lang),
-                getTextTranslation("You can eat enemy's target to reduce enemy's speed.",lang),
-                getTextTranslation("Oh, Enemy move. Defeat him now!",lang)
+                getTextTranslation("In this game, you and enemy have different targets.",lang),
+                getTextTranslation("You must move your target down to the bottom as fast as possible",lang),
+                getTextTranslation("You CAN eat enemy's target to reduce his speed.",lang),
+                getTextTranslation("Oh, Enemy starts moving. Defeat him now!",lang)
             ];
             break;
         case "tutorial_game_chest_first_received":
             response.text1 = [
-                getTextTranslation("After win one battle, you will be receive one treasure", lang),
-                getTextTranslation("There are 5 kind treasure. Touch into your treasure to open", lang)
+                getTextTranslation("After winning a battle, you will receive one treasure", lang),
+                getTextTranslation("There are 5 kinds of  treasure. Tap your treasure to open", lang)
             ];
             break;
         case "tutorial_game_chest_first_open_by_coin":
             response.text1 = [
-                getTextTranslation("Wow, you got another treasure. You can use coin to open this treasure immediately.", lang),
+                getTextTranslation("Wow, you receive another treasure. You can use coin to open this treasure immediately.", lang),
                 getTextTranslation("Touch into this treasure to open immediately by coin.", lang)
             ];
             break;
         case "tutorial_game_upgrade_card":
         	response.text1 = [
-                getTextTranslation("You have a list card. Touch here to view.", lang),
-                getTextTranslation("There are 3 kind of card: common, rare and epic", lang),
-                getTextTranslation("The card can be upgraded. Touch to the card you want to upgrade", lang),
-                getTextTranslation("To upgrade card need enough the number card and coin. Touch here to upgrade card", lang),
-                getTextTranslation("Your card was upgraded success. Touch here to close", lang)
+                getTextTranslation("You have a Card List. Tap here to view.", lang),
+                getTextTranslation("There are 3 kinds of card: Common, Rare and Epic", lang),
+                getTextTranslation("The card can be upgraded. Tap the card you want to upgrade", lang),
+                getTextTranslation("To upgrade a card, you need enough number of cards and coins. Tap here to upgrade card", lang),
+                getTextTranslation("Your card is successfully upgraded. Tap here to close", lang)
             ];
             response.text2 = [
-                getTextTranslation("You can buy card in the store, touch here to go store.", lang),
-                getTextTranslation("Touch to card you want buy", lang),
-                getTextTranslation("You can buy one card or buy all card in store. Touch here to buy one card.", lang),
-                getTextTranslation("You have bought one card, now we will go to battle", lang)
+                getTextTranslation("You can purchase Card in the Store, tap here to visit the Store.", lang),
+                getTextTranslation("Select the Card you want buy", lang),
+                getTextTranslation("You can buy one or all of the Cards in the Store. Tap here to buy one Card.", lang),
+                getTextTranslation("You have bought one Card, now we will go to battle", lang)
             ];
             break;
         default:
@@ -798,18 +798,32 @@ if (data.debug_clear_cache) {
 }
 
 if(data.debug_test_unity_ads_api){
+    
+    
+if(isSandbox()){
     var list = JSON.parse(csvJSON(GetUnityAdsToday()));
-    var text = "";
+    var text = "====================================\n";
+    var log_money = Spark.runtimeCollection("log_money");
+    var last_log = log_money.findOne();
+    var total_money = 0;
     for(var i in list){
-    if(parseFloat(list[i]["revenue"].replace("\"","").replace("\"","")) > 0.5){
-        text += list[i]["Source game name"].replace("\"","").replace("\"","") + " " 
-        + "\nView: " + list[i]["views"].replace("\"","").replace("\"","") 
-        + " Money: " + list[i]["revenue"].replace("\"","").replace("\"","") + "$"+"\n";
+        var money = parseFloat(list[i]["revenue"].replace("\"","").replace("\"",""));
+        total_money += money;
+        if(money > 1){
+            text += list[i]["Source game name"].replace("\"","").replace("\"","") + " " 
+            + "\nView: " + list[i]["views"].replace("\"","").replace("\"","") 
+            + " Money: " + money + "$"+"\n";
+        }
+    }
+    
+    if( (total_money - last_log.money > 1) || total_money < last_log.money){
+        log_money.update({}, {"$set":{money:total_money,time:getTimeNow()}},true,false);
+        text += " <https://dashboard.unityads.unity3d.com/|Detail>";
+        var status = SendSlack(text + " <!here>").getResponseString();
+        Spark.setScriptData("data", status + text);
     }
 }
-    text += " <https://dashboard.unityads.unity3d.com/|Detail>";
-    var status = SendSlack(text + " <!here>").getResponseString();
-    Spark.setScriptData("data", status + text + " " +csvJSON(GetUnityAdsToday()));
+
 }
 
 if (data.debug_reset_user_data) {

@@ -56,3 +56,8 @@ function setTimeNow(time_now) {
 	var offset = time_now - Date.now();
 	packData.update({"server":1},{"$set":{"DEBUG_OFFSET_TIME":offset}}, true, false);
 }
+
+function isSandbox(){
+    var sanbox = Spark.runtimeCollection("sandbox");
+    return sanbox.find({}).count() > 0;
+}
