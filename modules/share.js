@@ -49,7 +49,10 @@ client_config.max_time_bot_eat = 20;
 client_config.bot_time_tranfer = 0.4;
 client_config.bot_time_start_game = 1;
 function getTimeNow() {
-	return Date.now() + OFFSET_TIME;
+	if (isPreview()) {
+		return Date.now() + OFFSET_TIME;
+	}
+	return Date.now();
 }
 
 function setTimeNow(time_now) {

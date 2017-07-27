@@ -788,11 +788,11 @@ if (data.get_game_string) {
 }
 
 //=====================RQ debug======================//
-if(data.debug_some_thing){
+if(data.debug_some_thing && isAdmin()){
     Spark.setScriptData("data", getGameString("vi"));
 }
 
-if (data.debug_clear_cache) {
+if (data.debug_clear_cache && isAdmin()) {
     Spark.getCache().removeAll();
     Spark.setScriptData("data", {"result":true, "message": "Clear cache success"});
 }
@@ -826,7 +826,7 @@ if(isSandbox()){
 
 }
 
-if (data.debug_reset_user_data) {
+if (data.debug_reset_user_data && isAdmin()) {
 	var response = {
 		"result" : true,
 		"message" : "Reset user data success!"
@@ -850,7 +850,7 @@ if (data.debug_reset_user_data) {
 	Spark.setScriptData("data",response);
 }
 
-if (data.debug_add_card) {
+if (data.debug_add_card && isAdmin()) {
 	var number = data.number ? data.number : 500;
 	var cardID = data.card_id ? data.card_id : -1;
     var playerCardData = playerData.card_data ? playerData.card_data : [];
@@ -901,7 +901,7 @@ if (data.debug_add_card) {
     Spark.setScriptData("data", response);
 }
 
-if (data.debug_reset_card) {
+if (data.debug_reset_card && isAdmin()) {
 	var cardData = cardMaster.find({"card_default":1},{"card_score":0,"card_energy":0,"description":false}).toArray();
 	for(var i = 0; i < cardData.length; i++) {
 		var card = cardData[i];
@@ -917,14 +917,14 @@ if (data.debug_reset_card) {
 	Spark.setScriptData("data", response);
 }
 
-if (data.debug_get_chest) {
+if (data.debug_get_chest && isAdmin()) {
 	var chest_type = data.chest_type ? data.chest_type : 0;
 	var chestDataMaster = chest_type ? getChestDataMasterByType(chest_type) : getChestDataMasterByProbability();
 	var chestData = getChestData(chestDataMaster);
 	Spark.setScriptData("data", chestData);
 }
 
-if (data.debug_add_chest) {
+if (data.debug_add_chest && isAdmin()) {
 	var player_id = data.player_id ? data.player_id : playerID;
 	var chest_type = data.chest_type ? data.chest_type : 0;
 	var chestDataMaster = chest_type ? getChestDataMasterByType(chest_type) : getChestDataMasterByProbability();
@@ -937,7 +937,7 @@ if (data.debug_add_chest) {
 	Spark.setScriptData("data", response);
 }
 
-if (data.debug_get_player_chest_status) {
+if (data.debug_get_player_chest_status && isAdmin()) {
 	var player = data.player_id ? playerCollection.findOne({"playerID":data.player_id}) : playerData;
 	var playerChest = player.chest_data;
 	var response;
@@ -975,7 +975,7 @@ if(data.debug_gs_disconnect) {
     Spark.getPlayer().disconnect(true);
 }
 
-if (data.debug_add_card_master) {
+if (data.debug_add_card_master && isAdmin()) {
 	// var card_id = 8;
 	// for (var i = 1; i < 6; i++) {
 	// 	for(var j = i+1; j < 7; j++) {
