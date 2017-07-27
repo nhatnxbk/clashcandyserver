@@ -118,8 +118,8 @@ function getPlayerLevelInfoByExp(currentExp) {
 
 function getStoreInfo(playerID) {
 	var storeInfo = {};
-	var packCoin = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.coin}).toArray();
-	var packLife = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.life}).toArray();
+	var packCoin = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.coin}).sort({"pack_id":1}).toArray();
+	var packLife = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.life}).sort({"pack_id":1}).toArray();
 	// var packBomb = storeMaster.find({"item_type":server_config.PACK_ITEM_TYPE.bomb}).toArray();
 	storeInfo.pack_coin = packCoin;
 	storeInfo.pack_life = packLife;
