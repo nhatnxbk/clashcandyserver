@@ -37,6 +37,14 @@ function SendNewNotification(include_player_ids, included_segments, excluded_seg
   return promise;
 }
 
+function isPreview() {
+	var stage = Spark.getConfig().getStage();
+	if (stage == "preview") {
+		return true;
+	}
+	return false;
+}
+
 // level master
 function getLevelMaster() {
 	var levelMasterData = Spark.getCache().get("level_master");
