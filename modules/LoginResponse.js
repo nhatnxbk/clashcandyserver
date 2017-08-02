@@ -2,6 +2,7 @@ require("share");
 require("common");
 require("translate_text");
 require("GameString");
+require("ads_module");
 
 var playerID ="";
 if( Spark.getPlayer()){
@@ -53,6 +54,12 @@ if (!currentPlayer.player_coin && !currentPlayer.init_player_coin) {
     currentPlayer.player_coin = DEFAULT_COIN;
     currentPlayer.init_player_coin = true;
 }
+
+//======== Ads module ========//
+var needUpdateListAds = currentPlayer.need_update_list_ads ? currentPlayer.need_update_list_ads : false;
+currentPlayer.need_update_list_ads = false;
+var canShowListAds = 1;
+// currentPlayer.can_show_ads = canShowListAds;
 
 //======== Caculate time can request and receive energy or not=========//
 var timeNow = getTimeNow();
@@ -143,6 +150,11 @@ currentPlayer.is_admin = isAdmin();
 // get new message
 var numNewMessage = getNumberNewMessgae(is_admin);
 currentPlayer.new_message = numNewMessage;
+
+// ads
+currentPlayer.need_update_list_ads = needUpdateListAds;
+var list_ads = canShowListAds ? getAds(currentPlayer.game_name, playerID) : [];
+currentPlayer.list_ads = list_ads;
 
 function getNumberNewMessgae(isAdmin) {
   var lastTimeRead = currentPlayer.last_read ? currentPlayer.last_read : 0;
