@@ -787,6 +787,32 @@ if (data.get_game_string) {
 	Spark.setScriptData("string_list", gameString);
 }
 
+//log ads
+if (data.log_ads) {
+    var log_data = data.log_ads_data ? data.log_ads_data : [];
+    var response;
+    if (log_data && log_data.length) {
+        var adsLogCollection = Spark.runtimeCollection("ads_log");
+        for (var i = 0; i < log_data.length; i++) {
+            var logData = log_data[i];
+            logData.playerID = playerID;
+            logData.reg_date = getTimeNow();
+        }
+        adsLogCollection.insert(log_data);
+        response = {
+            "result": true,
+            "message": "Log ads success",
+            "count": log_data.length
+        }
+    } else {
+        response = {
+            "result": false,
+            "message": "No have new log ads data"
+        }    
+    }
+    Spark.setScriptData("data", response);
+}
+
 //=====================RQ debug======================//
 if(data.debug_some_thing && isAdmin()){
     Spark.setScriptData("data", getGameString("vi"));

@@ -27,6 +27,7 @@ var OFFSET_TIME = server_config.DEBUG_OFFSET_TIME;
 var LIST_ADMIN = server_config.LIST_ADMIN;
 var NUM_NOTICE = server_config.NUM_NOTICE;
 var NUM_NOTICE_ADMIN = server_config.NUM_NOTICE_ADMIN;
+var NUMBER_TIME_CUSTOM_ADS_SHOW_MAX = server_config.NUMBER_TIME_CUSTOM_ADS_SHOW_MAX ? server_config.NUMBER_TIME_CUSTOM_ADS_SHOW_MAX : 20;
 //====card parameter====//
 var card_level_max = server_config.card_level_max;
 var card_score_rarity_common = server_config.card_score_rarity_common;
