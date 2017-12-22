@@ -67,7 +67,7 @@ if(data.get_bot_player){
 	opponentPlayer.level = BOT_LEVEL[parseInt(Math.random()* BOT_LEVEL.length)];
 	opponentPlayer.seed = parseInt(Math.random() * 100000);
 	if(opponentPlayer.level_bot_data){
-	    opponentPlayer.level = opponentPlayer.level_bot_data.level;
+	   // opponentPlayer.level = opponentPlayer.level_bot_data.level;
 	}
 	opponentPlayer.level_data = get_level_data(opponentPlayer.level);
 	Spark.setScriptData("botData",opponentPlayer);
