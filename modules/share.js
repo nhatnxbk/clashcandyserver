@@ -44,8 +44,6 @@ var card_coin_need_rarity_rare = server_config.card_coin_need_rarity_rare;
 var card_coin_need_rarity_epic = server_config.card_coin_need_rarity_epic;
 //Config send to user
 client_config.coin_need_open_chest_per_seconds = server_config.coin_need_open_chest_per_seconds;
-client_config.random_min_time = 10;
-client_config.random_max_time = 100;
 client_config.max_time_bot_eat = 20;
 client_config.bot_time_tranfer = 0.4;
 client_config.bot_time_start_game = 1;

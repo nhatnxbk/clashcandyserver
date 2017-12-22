@@ -5,4 +5,4 @@
 // For details of the GameSparks Cloud Code API see https://docs.gamesparks.com/
 //
 // ====================================================================================================
-Spark.setScriptData("data", {time_bot:parseInt(Math.rand() * 30 + 30)});
+Spark.setScriptData("data", {time_bot:Math.floor(Math.random() * 5 + 5)});
